@@ -1,0 +1,8 @@
+{
+    "watch": ["src/"],
+    "ext": "js,json",
+    "ignore": ["dist/", "node_modules", ".git", "src/**/*.test.js"],
+    "execMap": {
+        "js": "babel-node"
+    }
+}
