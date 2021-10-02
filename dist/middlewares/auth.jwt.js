@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.isAsistente_Callcenter = exports.isJefe_Ventas = exports.isAsistente_Marketing = exports.isVendedor = exports.isAdmin = exports.verifyToken = void 0;
+exports.isAsistente_Callcenter = exports.isJefe_Ventas = exports.isMarketingyCallCenter = exports.isAsistente_Marketing = exports.isVendedor = exports.isAdmin = exports.verifyToken = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -296,7 +296,7 @@ var isAsistente_Marketing = /*#__PURE__*/function () {
 
 exports.isAsistente_Marketing = isAsistente_Marketing;
 
-var isJefe_Ventas = /*#__PURE__*/function () {
+var isMarketingyCallCenter = /*#__PURE__*/function () {
   var _ref5 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res, next) {
     var user, roles, i;
     return _regenerator["default"].wrap(function _callee5$(_context5) {
@@ -325,7 +325,7 @@ var isJefe_Ventas = /*#__PURE__*/function () {
               break;
             }
 
-            if (!(roles[i].name === 'Jefe-Ventas')) {
+            if (!(roles[i].name === 'Asistente-Marketing' || roles[i].name === 'Asistente-Callcenter')) {
               _context5.next = 11;
               break;
             }
@@ -340,7 +340,7 @@ var isJefe_Ventas = /*#__PURE__*/function () {
 
           case 14:
             return _context5.abrupt("return", res.status(403).json({
-              message: 'Requiere permiso de Jefe-Ventas'
+              message: 'Requiere permiso de Asistente-Marketing || Asistente-Callcenter'
             }));
 
           case 15:
@@ -351,14 +351,14 @@ var isJefe_Ventas = /*#__PURE__*/function () {
     }, _callee5);
   }));
 
-  return function isJefe_Ventas(_x13, _x14, _x15) {
+  return function isMarketingyCallCenter(_x13, _x14, _x15) {
     return _ref5.apply(this, arguments);
   };
 }();
 
-exports.isJefe_Ventas = isJefe_Ventas;
+exports.isMarketingyCallCenter = isMarketingyCallCenter;
 
-var isAsistente_Callcenter = /*#__PURE__*/function () {
+var isJefe_Ventas = /*#__PURE__*/function () {
   var _ref6 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(req, res, next) {
     var user, roles, i;
     return _regenerator["default"].wrap(function _callee6$(_context6) {
@@ -387,7 +387,7 @@ var isAsistente_Callcenter = /*#__PURE__*/function () {
               break;
             }
 
-            if (!(roles[i].name === 'Asistente-Callcenter')) {
+            if (!(roles[i].name === 'Jefe-Ventas')) {
               _context6.next = 11;
               break;
             }
@@ -402,7 +402,7 @@ var isAsistente_Callcenter = /*#__PURE__*/function () {
 
           case 14:
             return _context6.abrupt("return", res.status(403).json({
-              message: 'Requiere permiso de Asistente-Callcenter'
+              message: 'Requiere permiso de Jefe-Ventas'
             }));
 
           case 15:
@@ -413,8 +413,70 @@ var isAsistente_Callcenter = /*#__PURE__*/function () {
     }, _callee6);
   }));
 
-  return function isAsistente_Callcenter(_x16, _x17, _x18) {
+  return function isJefe_Ventas(_x16, _x17, _x18) {
     return _ref6.apply(this, arguments);
+  };
+}();
+
+exports.isJefe_Ventas = isJefe_Ventas;
+
+var isAsistente_Callcenter = /*#__PURE__*/function () {
+  var _ref7 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7(req, res, next) {
+    var user, roles, i;
+    return _regenerator["default"].wrap(function _callee7$(_context7) {
+      while (1) {
+        switch (_context7.prev = _context7.next) {
+          case 0:
+            _context7.next = 2;
+            return _User["default"].findById(req.userId);
+
+          case 2:
+            user = _context7.sent;
+            _context7.next = 5;
+            return _Role["default"].find({
+              _id: {
+                $in: user.roles
+              }
+            });
+
+          case 5:
+            roles = _context7.sent;
+            i = 0;
+
+          case 7:
+            if (!(i < roles.length)) {
+              _context7.next = 14;
+              break;
+            }
+
+            if (!(roles[i].name === 'Asistente-Callcenter')) {
+              _context7.next = 11;
+              break;
+            }
+
+            next();
+            return _context7.abrupt("return");
+
+          case 11:
+            i++;
+            _context7.next = 7;
+            break;
+
+          case 14:
+            return _context7.abrupt("return", res.status(403).json({
+              message: 'Requiere permiso de Asistente-Callcenter'
+            }));
+
+          case 15:
+          case "end":
+            return _context7.stop();
+        }
+      }
+    }, _callee7);
+  }));
+
+  return function isAsistente_Callcenter(_x19, _x20, _x21) {
+    return _ref7.apply(this, arguments);
   };
 }();
 

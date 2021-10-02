@@ -15,7 +15,18 @@ var _Seller = _interopRequireDefault(require("../models/Seller"));
 
 var _User = _interopRequireDefault(require("../models/User"));
 
+var _cloudinary = _interopRequireDefault(require("cloudinary"));
+
+var _fsExtra = _interopRequireDefault(require("fs-extra"));
+
 var sellerCtrl = {};
+
+_cloudinary["default"].config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET // secure: true
+
+});
 
 sellerCtrl.getAll = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
@@ -462,6 +473,76 @@ sellerCtrl.getSellersBySucursal = /*#__PURE__*/function () {
 
   return function (_x15, _x16) {
     return _ref8.apply(this, arguments);
+  };
+}();
+
+sellerCtrl.updatePhoto = /*#__PURE__*/function () {
+  var _ref9 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(req, res) {
+    var sellerId, archivo, respuesta, query;
+    return _regenerator["default"].wrap(function _callee9$(_context9) {
+      while (1) {
+        switch (_context9.prev = _context9.next) {
+          case 0:
+            sellerId = req.body.sellerId;
+            archivo = req.file;
+            _context9.prev = 2;
+            _context9.next = 5;
+            return _cloudinary["default"].uploader.upload(archivo.path);
+
+          case 5:
+            respuesta = _context9.sent;
+            _context9.next = 8;
+            return _Seller["default"].findByIdAndUpdate(sellerId, {
+              rutaPerfil: respuesta.secure_url,
+              titlePerfil: respuesta.public_id
+            });
+
+          case 8:
+            query = _context9.sent;
+
+            if (!query) {
+              _context9.next = 15;
+              break;
+            }
+
+            _context9.next = 12;
+            return _fsExtra["default"].unlink(archivo.path);
+
+          case 12:
+            //Elimina ruta del servidor
+            res.json({
+              message: 'Foto de Vendedor subida con éxito'
+            });
+            _context9.next = 16;
+            break;
+
+          case 15:
+            return _context9.abrupt("return", res.status(404).json({
+              message: 'Vendedor no encontrado'
+            }));
+
+          case 16:
+            _context9.next = 22;
+            break;
+
+          case 18:
+            _context9.prev = 18;
+            _context9.t0 = _context9["catch"](2);
+            console.error(_context9.t0);
+            return _context9.abrupt("return", res.status(503).json({
+              message: _context9.t0.message
+            }));
+
+          case 22:
+          case "end":
+            return _context9.stop();
+        }
+      }
+    }, _callee9, null, [[2, 18]]);
+  }));
+
+  return function (_x17, _x18) {
+    return _ref9.apply(this, arguments);
   };
 }();
 

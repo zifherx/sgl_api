@@ -74,6 +74,19 @@ export const isAsistente_Marketing = async(req, res, next) => {
     return res.status(403).json({ message: 'Requiere permiso de Asistente-Marketing' });
 }
 
+export const isMarketingyCallCenter = async(req, res, next) => {
+    const user = await User.findById(req.userId);
+    const roles = await Role.find({ _id: { $in: user.roles } });
+
+    for (let i = 0; i < roles.length; i++) {
+        if (roles[i].name === 'Asistente-Marketing' || roles[i].name === 'Asistente-Callcenter') {
+            next()
+            return;
+        }
+    }
+    return res.status(403).json({ message: 'Requiere permiso de Asistente-Marketing || Asistente-Callcenter' });
+}
+
 export const isJefe_Ventas = async(req, res, next) => {
 
     const user = await User.findById(req.userId);

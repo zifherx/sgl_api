@@ -17,6 +17,12 @@ var sellerSchema = new _mongoose.Schema({
   sucursal: {
     type: String
   },
+  rutaPerfil: {
+    type: String
+  },
+  titlePerfil: {
+    type: String
+  },
   status: {
     type: Boolean,
     "default": true

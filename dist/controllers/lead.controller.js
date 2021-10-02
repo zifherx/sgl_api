@@ -1012,7 +1012,7 @@ leadCtrl.conteoLeadsbyOrigen = /*#__PURE__*/function () {
           case 4:
             query = _context16.sent;
 
-            if (query >= 0) {
+            if (query.length >= 0) {
               res.json({
                 data_origen: origen,
                 conteo: query

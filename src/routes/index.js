@@ -12,6 +12,7 @@ import modeloRoutes from './modelo.routes'
 import vehicleRoutes from './vehicle.routes'
 import sucursalRoutes from './sucursal.routes'
 import conversionRoutes from './conversion.routes'
+import complianceRoutes from './compliance.routes'
 
 const router = Router();
 
@@ -28,5 +29,6 @@ router.use('/models', modeloRoutes)
 router.use('/sucursal', sucursalRoutes)
 router.use('/vehicles', vehicleRoutes)
 router.use('/conversion', conversionRoutes)
+router.use('/cumplimiento', complianceRoutes)
 
 export default router;

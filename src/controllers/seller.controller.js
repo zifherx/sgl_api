@@ -1,7 +1,16 @@
 import Seller from "../models/Seller";
 import User from "../models/User";
+import cloudinary from 'cloudinary';
+import fs from 'fs-extra';
 
 const sellerCtrl = {}
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    // secure: true
+});
 
 sellerCtrl.getAll = async(req, res) => {
     try {
@@ -133,6 +142,30 @@ sellerCtrl.getSellersBySucursal = async(req, res) => {
         }
     } catch (err) {
         console.error(err)
+        return res.status(503).json({ message: err.message })
+    }
+}
+
+sellerCtrl.updatePhoto = async(req, res) => {
+    const { sellerId } = req.body;
+    const archivo = req.file;
+
+    try {
+        //Cloudinary
+        const respuesta = await cloudinary.uploader.upload(archivo.path);
+
+        //Node
+        const query = await Seller.findByIdAndUpdate(sellerId, { rutaPerfil: respuesta.secure_url, titlePerfil: respuesta.public_id })
+
+        if (query) {
+            await fs.unlink(archivo.path) //Elimina ruta del servidor
+            res.json({ message: 'Foto de Vendedor subida con éxito' })
+        } else {
+            return res.status(404).json({ message: 'Vendedor no encontrado' })
+        }
+
+    } catch (err) {
+        console.error(err);
         return res.status(503).json({ message: err.message })
     }
 }

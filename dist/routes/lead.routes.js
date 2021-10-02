@@ -26,7 +26,7 @@ router.post('/count/modelo', _lead["default"].conteoLeadsAtendidosxModelo);
 router.post('/sale-by-status', _lead["default"].conteoVentasByStatus);
 router.post('/count-by-status', _lead["default"].getCountByStatus);
 router.get('/:leadId', _lead["default"].getOne);
-router.post('/', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAsistente_Marketing], _lead["default"].createLead);
+router.post('/', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isMarketingyCallCenter], _lead["default"].createLead);
 router.patch('/update/:leadId', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAsistente_Callcenter], _lead["default"].actualizarVenta);
 router.patch('/asignar/:leadId', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAsistente_Callcenter], _lead["default"].asignarLead);
 router.patch('/:leadId', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAsistente_Callcenter], _lead["default"].atenderLead);

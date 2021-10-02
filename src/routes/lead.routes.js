@@ -16,7 +16,7 @@ router.post('/count/modelo', leadController.conteoLeadsAtendidosxModelo)
 router.post('/sale-by-status', leadController.conteoVentasByStatus);
 router.post('/count-by-status', leadController.getCountByStatus);
 router.get('/:leadId', leadController.getOne)
-router.post('/', [authJwt.verifyToken, authJwt.isAsistente_Marketing], leadController.createLead)
+router.post('/', [authJwt.verifyToken, authJwt.isMarketingyCallCenter], leadController.createLead)
 router.patch('/update/:leadId', [authJwt.verifyToken, authJwt.isAsistente_Callcenter], leadController.actualizarVenta)
 router.patch('/asignar/:leadId', [authJwt.verifyToken, authJwt.isAsistente_Callcenter], leadController.asignarLead)
 router.patch('/:leadId', [authJwt.verifyToken, authJwt.isAsistente_Callcenter], leadController.atenderLead)

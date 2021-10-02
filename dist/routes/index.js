@@ -35,6 +35,8 @@ var _sucursal = _interopRequireDefault(require("./sucursal.routes"));
 
 var _conversion = _interopRequireDefault(require("./conversion.routes"));
 
+var _compliance = _interopRequireDefault(require("./compliance.routes"));
+
 var router = (0, _express.Router)();
 router.get('/', _api["default"].getAll);
 router.use('/roles', _roles["default"]);
@@ -49,6 +51,7 @@ router.use('/models', _modelo["default"]);
 router.use('/sucursal', _sucursal["default"]);
 router.use('/vehicles', _vehicle["default"]);
 router.use('/conversion', _conversion["default"]);
+router.use('/cumplimiento', _compliance["default"]);
 var _default = router;
 exports["default"] = _default;
 //# sourceMappingURL=index.js.map

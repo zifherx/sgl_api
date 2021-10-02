@@ -309,7 +309,7 @@ leadCtrl.conteoLeadsbyOrigen = async(req, res) => {
 
     try {
         const query = await Lead.where({ dataOrigin: origen, fecha_ingreso: { $gte: new Date(start), $lte: new Date(end) } }).find().countDocuments();
-        if (query >= 0) {
+        if (query.length >= 0) {
             res.json({ data_origen: origen, conteo: query })
         }
     } catch (err) {
@@ -346,4 +346,4 @@ leadCtrl.conteoLeadsAtendidosxModelo = async(req, res) => {
     }
 }
 
-export default leadCtrl
+export default leadCtrl;

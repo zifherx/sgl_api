@@ -12,7 +12,8 @@ var leadSchema = new _mongoose.Schema({
     type: String
   },
   dataOrigin: {
-    type: String
+    type: Number,
+    "default": 0
   },
   statusLead: {
     type: Boolean,

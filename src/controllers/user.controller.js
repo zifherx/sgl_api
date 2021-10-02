@@ -109,6 +109,7 @@ userCtrl.updateProfile = async(req, res) => {
     const data_image = req.file
     try {
         //Cloudinary
+        // console.log(data_image);
         const response = await cloudinary.uploader.upload(data_image.path);
         const query = await User.findByIdAndUpdate(userId, { email, cellphone, description, rutaPerfil: response.secure_url, titlePerfil: response.public_id });
         // console.log(query)

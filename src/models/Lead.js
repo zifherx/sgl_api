@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 
 const leadSchema = new Schema({
     sucursal_lead: { type: String },
-    dataOrigin: { type: String },
+    dataOrigin: { type: Number, default: 0 },
     statusLead: { type: Boolean, default: false },
     customer_name: { type: String },
     customer_document: { type: String },
