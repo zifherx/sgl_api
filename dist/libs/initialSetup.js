@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createAdminUser = exports.createRoles = void 0;
+exports.createRoles = exports.createAdminUser = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -24,7 +24,7 @@ var createRoles = /*#__PURE__*/function () {
           case 0:
             _context.prev = 0;
             _context.next = 3;
-            return _Role["default"].estimatedDocumentCount();
+            return _Role["default"].countDocuments();
 
           case 3:
             nroRoles = _context.sent;
@@ -40,12 +40,16 @@ var createRoles = /*#__PURE__*/function () {
             _context.next = 8;
             return Promise.all([new _Role["default"]({
               name: 'Administrador',
-              description: 'Webmaster de Sistema',
-              status: true
+              description: 'Webmaster de Sistema'
             }).save(), new _Role["default"]({
               name: 'Usuario',
-              description: 'Usuario común',
-              status: true
+              description: 'Usuario común'
+            }).save(), new _Role["default"]({
+              name: 'Asistente-Marketing',
+              description: 'Alimenta la base de datos'
+            }).save(), new _Role["default"]({
+              name: 'Asistente-Digital',
+              description: 'Gestiona leads para su conversión'
             }).save()]);
 
           case 8:
@@ -76,75 +80,72 @@ exports.createRoles = createRoles;
 
 var createAdminUser = /*#__PURE__*/function () {
   var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
-    var nroUser, roleAdmin, idRol, registro;
+    var nroUser, roleAdmin, registro;
     return _regenerator["default"].wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
             _context2.prev = 0;
             _context2.next = 3;
-            return _User["default"].estimatedDocumentCount();
+            return _User["default"].countDocuments();
 
           case 3:
             nroUser = _context2.sent;
-            _context2.next = 6;
-            return _Role["default"].find({
-              name: 'Administrador'
-            });
-
-          case 6:
-            roleAdmin = _context2.sent;
-            idRol = roleAdmin.map(function (a) {
-              return a._id;
-            });
 
             if (!(nroUser > 0)) {
-              _context2.next = 10;
+              _context2.next = 6;
               break;
             }
 
             return _context2.abrupt("return");
 
-          case 10:
+          case 6:
+            _context2.next = 8;
+            return _Role["default"].findOne({
+              name: 'Administrador'
+            });
+
+          case 8:
+            roleAdmin = _context2.sent;
             _context2.t0 = Promise;
             _context2.t1 = _User["default"];
-            _context2.next = 14;
+            _context2.next = 13;
             return _User["default"].encryptPassword('admin');
 
-          case 14:
+          case 13:
             _context2.t2 = _context2.sent;
-            _context2.t3 = idRol;
+            _context2.t3 = roleAdmin._id;
             _context2.t4 = {
               name: 'Fernando Rojas',
               username: 'frojasq',
               password: _context2.t2,
               email: 'frojas@autonortnor.com.pe',
               description: 'Webmaster del Sistema',
-              sucursal: 'Trujillo',
+              sucursal: 'Corporativo',
               roles: _context2.t3
             };
             _context2.t5 = new _context2.t1(_context2.t4).save();
             _context2.t6 = [_context2.t5];
-            _context2.next = 21;
+            _context2.next = 20;
             return _context2.t0.all.call(_context2.t0, _context2.t6);
 
-          case 21:
+          case 20:
             registro = _context2.sent;
             console.log('Usuario creado:', registro);
-            _context2.next = 28;
+            _context2.next = 27;
             break;
 
-          case 25:
-            _context2.prev = 25;
+          case 24:
+            _context2.prev = 24;
             _context2.t7 = _context2["catch"](0);
             console.error(_context2.t7);
 
-          case 28:
+          case 27:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[0, 25]]);
+    }, _callee2, null, [[0, 24]]);
   }));
 
   return function createAdminUser() {

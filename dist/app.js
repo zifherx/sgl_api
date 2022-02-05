@@ -15,6 +15,8 @@ var _morgan = _interopRequireDefault(require("morgan"));
 
 var _cors = _interopRequireDefault(require("cors"));
 
+var _helmet = _interopRequireDefault(require("helmet"));
+
 var _path = _interopRequireDefault(require("path"));
 
 var _routes = _interopRequireDefault(require("./routes"));
@@ -36,8 +38,9 @@ initData.createAdminUser(); //Settings
 
 app.set('port', Number(process.env.PORT) || 4000); //Middlewares
 
-app.use((0, _cors["default"])());
+app.use((0, _helmet["default"])());
 app.use((0, _morgan["default"])('dev'));
+app.use((0, _cors["default"])());
 app.use(_express["default"].json());
 app.use(_express["default"].urlencoded({
   extended: false

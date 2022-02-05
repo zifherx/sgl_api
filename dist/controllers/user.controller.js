@@ -15,18 +15,9 @@ var _Role = _interopRequireDefault(require("../models/Role"));
 
 var _User = _interopRequireDefault(require("../models/User"));
 
-var _cloudinary = _interopRequireDefault(require("cloudinary"));
-
-var _fsExtra = _interopRequireDefault(require("fs-extra"));
+var _Sucursal = _interopRequireDefault(require("../models/Sucursal"));
 
 var userCtrl = {};
-
-_cloudinary["default"].config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET // secure: true
-
-});
 
 userCtrl.getAll = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
@@ -37,9 +28,18 @@ userCtrl.getAll = /*#__PURE__*/function () {
           case 0:
             _context.prev = 0;
             _context.next = 3;
-            return _User["default"].find().sort({
-              name: 'asc'
-            }).populate('roles userCreator');
+            return _User["default"].find().select("-password").sort({
+              name: 1
+            }).populate({
+              path: "roles",
+              select: "name"
+            }).populate({
+              path: 'sucursal',
+              select: 'name'
+            }).populate({
+              path: "createdBy",
+              select: "name username"
+            });
 
           case 3:
             query = _context.sent;
@@ -49,13 +49,16 @@ userCtrl.getAll = /*#__PURE__*/function () {
               break;
             }
 
-            res.json(query);
+            res.json({
+              total_count: query.length,
+              all_users: query
+            });
             _context.next = 9;
             break;
 
           case 8:
             return _context.abrupt("return", res.status(404).json({
-              message: 'No existen Usuarios'
+              message: "No existen Usuarios"
             }));
 
           case 9:
@@ -65,7 +68,7 @@ userCtrl.getAll = /*#__PURE__*/function () {
           case 11:
             _context.prev = 11;
             _context.t0 = _context["catch"](0);
-            console.error(_context.t0);
+            console.log(_context.t0);
             return _context.abrupt("return", res.status(503).json({
               message: _context.t0.message
             }));
@@ -83,7 +86,7 @@ userCtrl.getAll = /*#__PURE__*/function () {
   };
 }();
 
-userCtrl.getOne = /*#__PURE__*/function () {
+userCtrl.getOneById = /*#__PURE__*/function () {
   var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
     var userId, query;
     return _regenerator["default"].wrap(function _callee2$(_context2) {
@@ -93,7 +96,16 @@ userCtrl.getOne = /*#__PURE__*/function () {
             userId = req.params.userId;
             _context2.prev = 1;
             _context2.next = 4;
-            return _User["default"].findById(userId).populate('roles userCreator');
+            return _User["default"].findById(userId).select("-password").populate({
+              path: "roles",
+              select: "name"
+            }).populate({
+              path: 'sucursal',
+              select: 'name'
+            }).populate({
+              path: "createdBy",
+              select: "name username"
+            });
 
           case 4:
             query = _context2.sent;
@@ -103,13 +115,15 @@ userCtrl.getOne = /*#__PURE__*/function () {
               break;
             }
 
-            res.json(query);
+            res.json({
+              founded: query
+            });
             _context2.next = 10;
             break;
 
           case 9:
             return _context2.abrupt("return", res.status(404).json({
-              message: 'No existe el Usuario'
+              message: "No existe el Usuario"
             }));
 
           case 10:
@@ -119,9 +133,9 @@ userCtrl.getOne = /*#__PURE__*/function () {
           case 12:
             _context2.prev = 12;
             _context2.t0 = _context2["catch"](1);
-            console.error(_context2.t0);
+            console.log(_context2.t0);
             return _context2.abrupt("return", res.status(503).json({
-              message: _context2.t0.message
+              error: _context2.t0.message
             }));
 
           case 16:
@@ -139,13 +153,13 @@ userCtrl.getOne = /*#__PURE__*/function () {
 
 userCtrl.createUser = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
-    var _req$body, name, username, password, email, cellphone, titlePerfil, rutaPerfil, description, roles, userCreator, newUser, userFound, foundRole, rol, query;
+    var _req$body, name, username, password, sucursal, roles, createdBy, newUser, userFound, sucursalFound, foundRole, rol, query;
 
     return _regenerator["default"].wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            _req$body = req.body, name = _req$body.name, username = _req$body.username, password = _req$body.password, email = _req$body.email, cellphone = _req$body.cellphone, titlePerfil = _req$body.titlePerfil, rutaPerfil = _req$body.rutaPerfil, description = _req$body.description, roles = _req$body.roles, userCreator = _req$body.userCreator;
+            _req$body = req.body, name = _req$body.name, username = _req$body.username, password = _req$body.password, sucursal = _req$body.sucursal, roles = _req$body.roles, createdBy = _req$body.createdBy;
             _context3.prev = 1;
             _context3.t0 = _User["default"];
             _context3.t1 = name;
@@ -155,93 +169,89 @@ userCtrl.createUser = /*#__PURE__*/function () {
 
           case 7:
             _context3.t3 = _context3.sent;
-            _context3.t4 = email;
-            _context3.t5 = cellphone;
-            _context3.t6 = titlePerfil;
-            _context3.t7 = rutaPerfil;
-            _context3.t8 = description;
-            _context3.t9 = {
+            _context3.t4 = {
               name: _context3.t1,
               username: _context3.t2,
-              password: _context3.t3,
-              email: _context3.t4,
-              cellphone: _context3.t5,
-              titlePerfil: _context3.t6,
-              rutaPerfil: _context3.t7,
-              description: _context3.t8
+              password: _context3.t3
             };
-            newUser = new _context3.t0(_context3.t9);
-            _context3.next = 17;
-            return _User["default"].find({
-              username: userCreator
+            newUser = new _context3.t0(_context3.t4);
+            _context3.next = 12;
+            return _User["default"].findOne({
+              username: createdBy
             });
 
-          case 17:
+          case 12:
             userFound = _context3.sent;
-            newUser.userCreator = userFound.map(function (a) {
-              return a._id;
+            newUser.createdBy = userFound._id;
+            _context3.next = 16;
+            return _Sucursal["default"].findOne({
+              name: sucursal
             });
+
+          case 16:
+            sucursalFound = _context3.sent;
+            newUser.sucursal = sucursalFound._id;
 
             if (!roles) {
-              _context3.next = 26;
+              _context3.next = 25;
               break;
             }
 
-            _context3.next = 22;
+            _context3.next = 21;
             return _Role["default"].find({
               name: {
                 $in: roles
               }
             });
 
-          case 22:
+          case 21:
             foundRole = _context3.sent;
             newUser.roles = foundRole.map(function (b) {
               return b._id;
             });
-            _context3.next = 30;
+            _context3.next = 29;
             break;
 
-          case 26:
-            _context3.next = 28;
+          case 25:
+            _context3.next = 27;
             return _Role["default"].findOne({
-              name: 'Usuario'
+              name: "Usuario"
             });
 
-          case 28:
+          case 27:
             rol = _context3.sent;
             newUser.roles = [rol._id];
 
-          case 30:
-            _context3.next = 32;
+          case 29:
+            _context3.next = 31;
             return newUser.save();
 
-          case 32:
+          case 31:
             query = _context3.sent;
 
             if (query) {
               res.json({
-                message: 'Usuario creado con éxito'
+                message: "Usuario creado con éxito"
               });
             }
 
-            _context3.next = 40;
+            _context3.next = 39;
             break;
 
-          case 36:
-            _context3.prev = 36;
-            _context3.t10 = _context3["catch"](1);
-            console.error(_context3.t10);
+          case 35:
+            _context3.prev = 35;
+            _context3.t5 = _context3["catch"](1);
+            console.log(_context3.t5);
             return _context3.abrupt("return", res.status(503).json({
-              message: _context3.t10.message
+              error: _context3.t5.message
             }));
 
-          case 40:
+          case 39:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[1, 36]]);
+    }, _callee3, null, [[1, 35]]);
   }));
 
   return function (_x5, _x6) {
@@ -251,77 +261,98 @@ userCtrl.createUser = /*#__PURE__*/function () {
 
 userCtrl.updateUser = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
-    var userId, _req$body2, roles, status, userCreator, roleFound, userFound, query;
+    var userId, _req$body2, name, username, roles, email, cellphone, sucursal, status, roleFound, sucursalFound, query;
 
     return _regenerator["default"].wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
             userId = req.params.userId;
-            _req$body2 = req.body, roles = _req$body2.roles, status = _req$body2.status, userCreator = _req$body2.userCreator;
+            _req$body2 = req.body, name = _req$body2.name, username = _req$body2.username, roles = _req$body2.roles, email = _req$body2.email, cellphone = _req$body2.cellphone, sucursal = _req$body2.sucursal, status = _req$body2.status;
             _context4.prev = 2;
             _context4.next = 5;
-            return _Role["default"].find({
+            return _Role["default"].findOne({
               name: roles
             });
 
           case 5:
             roleFound = _context4.sent;
             _context4.next = 8;
-            return _User["default"].find({
-              username: userCreator
+            return _Sucursal["default"].findOne({
+              name: sucursal
             });
 
           case 8:
-            userFound = _context4.sent;
-            _context4.next = 11;
-            return _User["default"].findByIdAndUpdate(userId, {
-              roles: roleFound.map(function (a) {
-                return a._id;
-              }),
-              status: status,
-              userCreator: userFound.map(function (b) {
-                return b._id;
-              })
-            });
+            sucursalFound = _context4.sent;
+
+            if (sucursalFound) {
+              _context4.next = 11;
+              break;
+            }
+
+            return _context4.abrupt("return", res.status(404).json({
+              message: "Sucursal ".concat(sucursal, " no encontrada")
+            }));
 
           case 11:
+            if (roleFound) {
+              _context4.next = 13;
+              break;
+            }
+
+            return _context4.abrupt("return", res.status(404).json({
+              message: "No existe el rol ".concat(roles)
+            }));
+
+          case 13:
+            _context4.next = 15;
+            return _User["default"].findByIdAndUpdate(userId, {
+              name: name,
+              username: username,
+              email: email,
+              cellphone: cellphone,
+              sucursal: sucursalFound._id,
+              roles: roleFound._id,
+              status: status
+            });
+
+          case 15:
             query = _context4.sent;
 
             if (!query) {
-              _context4.next = 16;
+              _context4.next = 20;
               break;
             }
 
             res.json({
-              message: 'Usuario actualizado con éxito'
+              message: "Usuario actualizado con éxito"
             });
-            _context4.next = 17;
+            _context4.next = 21;
             break;
 
-          case 16:
+          case 20:
             return _context4.abrupt("return", res.status(404).json({
-              message: 'Usuario no encontrado'
+              message: "Usuario no encontrado"
             }));
 
-          case 17:
-            _context4.next = 23;
+          case 21:
+            _context4.next = 27;
             break;
 
-          case 19:
-            _context4.prev = 19;
+          case 23:
+            _context4.prev = 23;
             _context4.t0 = _context4["catch"](2);
-            console.error(_context4.t0);
+            console.log(_context4.t0);
             return _context4.abrupt("return", res.status(503).json({
               message: _context4.t0.message
             }));
 
-          case 23:
+          case 27:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[2, 19]]);
+    }, _callee4, null, [[2, 23]]);
   }));
 
   return function (_x7, _x8) {
@@ -331,71 +362,82 @@ userCtrl.updateUser = /*#__PURE__*/function () {
 
 userCtrl.updateProfile = /*#__PURE__*/function () {
   var _ref5 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res) {
-    var _req$body3, userId, email, cellphone, description, data_image, response, query;
+    var userId, _req$body3, email, cellphone, description, avatar, query;
 
     return _regenerator["default"].wrap(function _callee5$(_context5) {
       while (1) {
         switch (_context5.prev = _context5.next) {
           case 0:
-            _req$body3 = req.body, userId = _req$body3.userId, email = _req$body3.email, cellphone = _req$body3.cellphone, description = _req$body3.description;
-            data_image = req.file;
-            _context5.prev = 2;
-            _context5.next = 5;
-            return _cloudinary["default"].uploader.upload(data_image.path);
+            userId = req.params.userId;
+            _req$body3 = req.body, email = _req$body3.email, cellphone = _req$body3.cellphone, description = _req$body3.description;
+            avatar = req.file;
+            query = null;
+            _context5.prev = 4;
 
-          case 5:
-            response = _context5.sent;
+            if (!(avatar == null || avatar == undefined)) {
+              _context5.next = 11;
+              break;
+            }
+
             _context5.next = 8;
             return _User["default"].findByIdAndUpdate(userId, {
               email: email,
               cellphone: cellphone,
-              description: description,
-              rutaPerfil: response.secure_url,
-              titlePerfil: response.public_id
+              description: description
             });
 
           case 8:
             query = _context5.sent;
+            _context5.next = 14;
+            break;
 
+          case 11:
+            _context5.next = 13;
+            return _User["default"].findByIdAndUpdate(userId, {
+              email: email,
+              cellphone: cellphone,
+              description: description,
+              avatar: avatar.location
+            });
+
+          case 13:
+            query = _context5.sent;
+
+          case 14:
             if (!query) {
-              _context5.next = 15;
+              _context5.next = 18;
               break;
             }
 
-            _context5.next = 12;
-            return _fsExtra["default"].unlink(data_image.path);
-
-          case 12:
-            //Eliminando ruta del servidor
             res.json({
-              message: 'Perfil actualizado con éxito'
+              message: "Perfil actualizado con éxito"
             });
-            _context5.next = 16;
-            break;
-
-          case 15:
-            return _context5.abrupt("return", res.status(404).json({
-              message: 'Perfil no encontrado'
-            }));
-
-          case 16:
-            _context5.next = 22;
+            _context5.next = 19;
             break;
 
           case 18:
-            _context5.prev = 18;
-            _context5.t0 = _context5["catch"](2);
-            console.error(_context5.t0);
-            return _context5.abrupt("return", res.status(503).json({
-              message: _context5.t0.message
+            return _context5.abrupt("return", res.status(404).json({
+              message: "Perfil no encontrado"
             }));
 
-          case 22:
+          case 19:
+            _context5.next = 25;
+            break;
+
+          case 21:
+            _context5.prev = 21;
+            _context5.t0 = _context5["catch"](4);
+            console.log(_context5.t0);
+            return _context5.abrupt("return", res.status(503).json({
+              error: _context5.t0.message
+            }));
+
+          case 25:
           case "end":
             return _context5.stop();
         }
       }
-    }, _callee5, null, [[2, 18]]);
+    }, _callee5, null, [[4, 21]]);
   }));
 
   return function (_x9, _x10) {
@@ -413,7 +455,7 @@ userCtrl.deleteUser = /*#__PURE__*/function () {
             userId = req.params.userId;
             _context6.prev = 1;
             _context6.next = 4;
-            return _User["default"].findByIdAndRemove(userId);
+            return _User["default"].findByIdAndDelete(userId);
 
           case 4:
             query = _context6.sent;
@@ -424,14 +466,14 @@ userCtrl.deleteUser = /*#__PURE__*/function () {
             }
 
             res.json({
-              message: 'Usuario eliminado con éxito'
+              message: "Usuario eliminado con éxito"
             });
             _context6.next = 10;
             break;
 
           case 9:
             return _context6.abrupt("return", res.status(404).json({
-              message: 'Usuario no encontrado'
+              message: "Usuario no encontrado"
             }));
 
           case 10:
@@ -441,9 +483,9 @@ userCtrl.deleteUser = /*#__PURE__*/function () {
           case 12:
             _context6.prev = 12;
             _context6.t0 = _context6["catch"](1);
-            console.error(_context6.t0);
+            console.log(_context6.t0);
             return _context6.abrupt("return", res.status(503).json({
-              message: _context6.t0.message
+              error: _context6.t0.message
             }));
 
           case 16:
@@ -468,7 +510,7 @@ userCtrl.getCountAll = /*#__PURE__*/function () {
           case 0:
             _context7.prev = 0;
             _context7.next = 3;
-            return _User["default"].estimatedDocumentCount();
+            return _User["default"].countDocuments();
 
           case 3:
             query = _context7.sent;
@@ -485,9 +527,9 @@ userCtrl.getCountAll = /*#__PURE__*/function () {
           case 7:
             _context7.prev = 7;
             _context7.t0 = _context7["catch"](0);
-            console.error(_context7.t0);
+            console.log(_context7.t0);
             return _context7.abrupt("return", res.status(503).json({
-              message: _context7.t0.message
+              error: _context7.t0.message
             }));
 
           case 11:
@@ -503,46 +545,65 @@ userCtrl.getCountAll = /*#__PURE__*/function () {
   };
 }();
 
-userCtrl.getCountByStatus = /*#__PURE__*/function () {
+userCtrl.getAllByStatus = /*#__PURE__*/function () {
   var _ref8 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(req, res) {
-    var status, query;
+    var query;
     return _regenerator["default"].wrap(function _callee8$(_context8) {
       while (1) {
         switch (_context8.prev = _context8.next) {
           case 0:
-            status = req.body.status;
-            _context8.prev = 1;
-            _context8.next = 4;
-            return _User["default"].where({
-              status: status
-            }).countDocuments();
+            _context8.prev = 0;
+            _context8.next = 3;
+            return _User["default"].find({
+              status: true
+            }).select("-password").sort({
+              name: 1
+            }).populate({
+              path: "roles",
+              select: "name"
+            }).populate({
+              path: "createdBy",
+              select: "name username"
+            });
 
-          case 4:
+          case 3:
             query = _context8.sent;
 
-            if (query >= 0) {
-              res.json({
-                nro_users_status: query
-              });
+            if (!(query.length > 0)) {
+              _context8.next = 8;
+              break;
             }
 
-            _context8.next = 12;
+            res.json({
+              count_activos: query.length,
+              users_activos: query
+            });
+            _context8.next = 9;
             break;
 
           case 8:
-            _context8.prev = 8;
-            _context8.t0 = _context8["catch"](1);
-            console.error(_context8.t0);
-            return _context8.abrupt("return", res.status(503).json({
-              message: _context8.t0.message
+            return _context8.abrupt("return", res.status(404).json({
+              message: 'No existen usuarios activos'
             }));
 
-          case 12:
+          case 9:
+            _context8.next = 15;
+            break;
+
+          case 11:
+            _context8.prev = 11;
+            _context8.t0 = _context8["catch"](0);
+            console.log(_context8.t0);
+            return _context8.abrupt("return", res.status(503).json({
+              error: _context8.t0.message
+            }));
+
+          case 15:
           case "end":
             return _context8.stop();
         }
       }
-    }, _callee8, null, [[1, 8]]);
+    }, _callee8, null, [[0, 11]]);
   }));
 
   return function (_x15, _x16) {
@@ -579,9 +640,9 @@ userCtrl.getCountByOnline = /*#__PURE__*/function () {
           case 8:
             _context9.prev = 8;
             _context9.t0 = _context9["catch"](1);
-            console.error(_context9.t0);
+            console.log(_context9.t0);
             return _context9.abrupt("return", res.status(503).json({
-              message: _context9.t0.message
+              error: _context9.t0.message
             }));
 
           case 12:
@@ -594,6 +655,78 @@ userCtrl.getCountByOnline = /*#__PURE__*/function () {
 
   return function (_x17, _x18) {
     return _ref9.apply(this, arguments);
+  };
+}();
+
+userCtrl.uploadPhoto = /*#__PURE__*/function () {
+  var _ref10 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee10(req, res) {
+    var userId, avatar, query;
+    return _regenerator["default"].wrap(function _callee10$(_context10) {
+      while (1) {
+        switch (_context10.prev = _context10.next) {
+          case 0:
+            userId = req.params.userId;
+            avatar = req.file;
+            query = null;
+            _context10.prev = 3;
+
+            if (!(avatar == null || avatar == undefined)) {
+              _context10.next = 8;
+              break;
+            }
+
+            return _context10.abrupt("return", res.status(404).json({
+              message: 'No se ha cargado avatar'
+            }));
+
+          case 8:
+            _context10.next = 10;
+            return _User["default"].findByIdAndUpdate(userId, {
+              avatar: avatar.location
+            });
+
+          case 10:
+            query = _context10.sent;
+
+          case 11:
+            if (!query) {
+              _context10.next = 15;
+              break;
+            }
+
+            res.json({
+              message: "Avatar subido con éxito"
+            });
+            _context10.next = 16;
+            break;
+
+          case 15:
+            return _context10.abrupt("return", res.status(404).json({
+              message: "Perfil no encontrado"
+            }));
+
+          case 16:
+            _context10.next = 22;
+            break;
+
+          case 18:
+            _context10.prev = 18;
+            _context10.t0 = _context10["catch"](3);
+            console.log(_context10.t0);
+            return _context10.abrupt("return", res.status(503).json({
+              error: _context10.t0.message
+            }));
+
+          case 22:
+          case "end":
+            return _context10.stop();
+        }
+      }
+    }, _callee10, null, [[3, 18]]);
+  }));
+
+  return function (_x19, _x20) {
+    return _ref10.apply(this, arguments);
   };
 }();
 

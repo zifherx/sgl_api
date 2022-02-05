@@ -1,10 +1,11 @@
-import express from 'express'
-import morgan from 'morgan'
-import cors from 'cors'
-import path from 'path'
-import indexRoutes from './routes'
-import 'dotenv/config'
-import * as initData from './libs/initialSetup'
+import express from 'express';
+import morgan from 'morgan';
+import cors from 'cors';
+import helmet from 'helmet';
+import path from 'path';
+import indexRoutes from './routes';
+import 'dotenv/config';
+import * as initData from './libs/initialSetup';
 
 //Creando Servidor
 const app = express()
@@ -18,8 +19,9 @@ initData.createAdminUser();
 app.set('port', Number(process.env.PORT) || 4000)
 
 //Middlewares
-app.use(cors())
+app.use(helmet())
 app.use(morgan('dev'))
+app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 

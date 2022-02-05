@@ -1,183 +1,252 @@
-import Role from '../models/Role'
-import User from '../models/User'
-import cloudinary from 'cloudinary'
-import fs from 'fs-extra'
+import Role from "../models/Role";
+import User from "../models/User";
+import Sucursal from '../models/Sucursal';
 
 const userCtrl = {};
 
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-    // secure: true
-});
+userCtrl.getAll = async (req, res) => {
+	try {
+		const query = await User.find()
+			.select("-password")
+			.sort({ name: 1 })
+			.populate({
+				path: "roles",
+				select: "name",
+			})
+			.populate({
+				path: 'sucursal',
+				select: 'name'
+			})
+			.populate({
+				path: "createdBy",
+				select: "name username",
+			});
 
+		if (query.length > 0) {
+			res.json({ total_count: query.length, all_users: query });
+		} else {
+			return res.status(404).json({ message: "No existen Usuarios" });
+		}
+	} catch (err) {
+		console.log(err);
+		return res.status(503).json({ message: err.message });
+	}
+};
 
-userCtrl.getAll = async(req, res) => {
-    try {
-        const query = await User.find().sort({ name: 'asc' }).populate('roles userCreator');
+userCtrl.getOneById = async (req, res) => {
+	const { userId } = req.params;
+	try {
+		const query = await User.findById(userId)
+			.select("-password")
+			.populate({
+				path: "roles",
+				select: "name",
+			})
+			.populate({
+				path: 'sucursal',
+				select: 'name'
+			})
+			.populate({
+				path: "createdBy",
+				select: "name username",
+			});
 
-        if (query.length > 0) {
-            res.json(query)
-        } else {
-            return res.status(404).json({ message: 'No existen Usuarios' })
-        }
+		if (query) {
+			res.json({ founded: query });
+		} else {
+			return res.status(404).json({ message: "No existe el Usuario" });
+		}
+	} catch (err) {
+		console.log(err);
+		return res.status(503).json({ error: err.message });
+	}
+};
 
-    } catch (err) {
-        console.error(err);
-        return res.status(503).json({ message: err.message })
-    }
-}
+userCtrl.createUser = async (req, res) => {
+	const { name, username, password, sucursal, roles, createdBy } = req.body;
+	try {
+		const newUser = new User({
+			name,
+			username,
+			password: await User.encryptPassword(password),
+		});
 
-userCtrl.getOne = async(req, res) => {
-    const { userId } = req.params;
-    try {
-        const query = await User.findById(userId).populate('roles userCreator');
-        if (query) {
-            res.json(query)
-        } else {
-            return res.status(404).json({ message: 'No existe el Usuario' })
-        }
+		const userFound = await User.findOne({ username: createdBy });
+		newUser.createdBy = userFound._id;
 
-    } catch (err) {
-        console.error(err);
-        return res.status(503).json({ message: err.message })
-    }
-}
+		const sucursalFound = await Sucursal.findOne({name: sucursal});
+		newUser.sucursal = sucursalFound._id;
 
-userCtrl.createUser = async(req, res) => {
-    const { name, username, password, email, cellphone, titlePerfil, rutaPerfil, description, roles, userCreator } = req.body;
-    try {
-        const newUser = new User({
+		if (roles) {
+			const foundRole = await Role.find({ name: { $in: roles } });
+			newUser.roles = foundRole.map((b) => b._id);
+		} else {
+			const rol = await Role.findOne({ name: "Usuario" });
+			newUser.roles = [rol._id];
+		}
+
+		const query = await newUser.save();
+
+		if (query) {
+			res.json({ message: "Usuario creado con éxito" });
+		}
+	} catch (err) {
+		console.log(err);
+		return res.status(503).json({ error: err.message });
+	}
+};
+
+userCtrl.updateUser = async (req, res) => {
+	const { userId } = req.params;
+	const { name,username, roles,email, cellphone, sucursal, status } = req.body;
+	try {
+		const roleFound = await Role.findOne({ name: roles });
+		const sucursalFound = await Sucursal.findOne({name: sucursal});
+		
+        if(!sucursalFound) return res.status(404).json({message: `Sucursal ${sucursal} no encontrada`});
+        if(!roleFound) return res.status(404).json({message: `No existe el rol ${roles}`});
+
+		const query = await User.findByIdAndUpdate(userId, {
             name,
-            username,
-            password: await User.encryptPassword(password),
-            email,
-            cellphone,
-            titlePerfil,
-            rutaPerfil,
-            description
-        });
+			username,
+			email,
+			cellphone,
+			sucursal: sucursalFound._id,
+			roles: roleFound._id,
+			status,
+		});
+		if (query) {
+			res.json({ message: "Usuario actualizado con éxito" });
+		} else {
+			return res.status(404).json({ message: "Usuario no encontrado" });
+		}
+	} catch (err) {
+		console.log(err);
+		return res.status(503).json({ message: err.message });
+	}
+};
 
-        const userFound = await User.find({ username: userCreator })
-        newUser.userCreator = userFound.map(a => a._id)
+userCtrl.updateProfile = async (req, res) => {
+	const { userId } = req.params;
+	const { email, cellphone, description } = req.body;
+	const avatar = req.file;
+	let query = null;
+	try {
+		if(avatar == null || avatar == undefined){
+			query = await User.findByIdAndUpdate(userId, {
+				email,
+				cellphone,
+				description
+			});
+		}else{
+			query = await User.findByIdAndUpdate(userId, {
+				email,
+				cellphone,
+				description,
+				avatar: avatar.location,
+			});
+		}
 
-        if (roles) {
-            const foundRole = await Role.find({ name: { $in: roles } })
-            newUser.roles = foundRole.map(b => b._id);
-        } else {
-            const rol = await Role.findOne({ name: 'Usuario' });
-            newUser.roles = [rol._id];
+		if (query) {
+			res.json({ message: "Perfil actualizado con éxito" });
+		} else {
+			return res.status(404).json({ message: "Perfil no encontrado" });
+		}
+	} catch (err) {
+		console.log(err);
+		return res.status(503).json({ error: err.message });
+	}
+};
+
+userCtrl.deleteUser = async (req, res) => {
+	const { userId } = req.params;
+	try {
+		const query = await User.findByIdAndDelete(userId);
+
+		if (query) {
+			res.json({ message: "Usuario eliminado con éxito" });
+		} else {
+			return res.status(404).json({ message: "Usuario no encontrado" });
+		}
+	} catch (err) {
+		console.log(err);
+		return res.status(503).json({ error: err.message });
+	}
+};
+
+userCtrl.getCountAll = async (req, res) => {
+	try {
+		const query = await User.countDocuments();
+		if (query >= 0) {
+			res.json({ nro_users: query });
+		}
+	} catch (err) {
+		console.log(err);
+		return res.status(503).json({ error: err.message });
+	}
+};
+
+userCtrl.getAllByStatus = async (req, res) => {
+	try {
+		const query = await User.find({ status: true })
+			.select("-password")
+			.sort({ name: 1 })
+			.populate({
+				path: "roles",
+				select: "name",
+			})
+			.populate({
+				path: "createdBy",
+				select: "name username",
+			});
+		if (query.length > 0) {
+			res.json({ count_activos: query.length, users_activos: query });
+		}else{
+            return res.status(404).json({message: 'No existen usuarios activos'});
         }
+	} catch (err) {
+		console.log(err);
+		return res.status(503).json({ error: err.message });
+	}
+};
 
-        const query = await newUser.save();
+userCtrl.getCountByOnline = async (req, res) => {
+	const { online } = req.body;
+	try {
+		const query = await User.where({ online }).countDocuments();
+		if (query >= 0) {
+			res.json({ nro_users_online: query });
+		}
+	} catch (err) {
+		console.log(err);
+		return res.status(503).json({ error: err.message });
+	}
+};
 
-        if (query) {
-            res.json({ message: 'Usuario creado con éxito' });
-        }
-    } catch (err) {
-        console.error(err);
-        return res.status(503).json({ message: err.message });
-    }
-}
+userCtrl.uploadPhoto = async (req, res) =>{
+	const { userId } = req.params;
+	const avatar = req.file;
 
-userCtrl.updateUser = async(req, res) => {
-    const { userId } = req.params;
-    const { roles, status, userCreator } = req.body;
-    try {
-        const roleFound = await Role.find({ name: roles })
-        const userFound = await User.find({ username: userCreator })
+	let query = null;
 
-        const query = await User.findByIdAndUpdate(userId, {
-            roles: roleFound.map(a => a._id),
-            status,
-            userCreator: userFound.map(b => b._id)
-        });
-        if (query) {
-            res.json({ message: 'Usuario actualizado con éxito' });
-        } else {
-            return res.status(404).json({ message: 'Usuario no encontrado' })
-        }
-    } catch (err) {
-        console.error(err);
-        return res.status(503).json({ message: err.message });
-    }
-}
+	try {
+		if(avatar == null || avatar == undefined){
+			return res.status(404).json({message: 'No se ha cargado avatar'});
+		}else{
+			query = await User.findByIdAndUpdate(userId, {
+				avatar: avatar.location,
+			});
+		}
 
-userCtrl.updateProfile = async(req, res) => {
-    const { userId, email, cellphone, description } = req.body
-    const data_image = req.file
-    try {
-        //Cloudinary
-        // console.log(data_image);
-        const response = await cloudinary.uploader.upload(data_image.path);
-        const query = await User.findByIdAndUpdate(userId, { email, cellphone, description, rutaPerfil: response.secure_url, titlePerfil: response.public_id });
-        // console.log(query)
-
-        if (query) {
-            await fs.unlink(data_image.path) //Eliminando ruta del servidor
-            res.json({ message: 'Perfil actualizado con éxito' })
-        } else {
-            return res.status(404).json({ message: 'Perfil no encontrado' })
-        }
-    } catch (err) {
-        console.error(err);
-        return res.status(503).json({ message: err.message });
-    }
-}
-
-userCtrl.deleteUser = async(req, res) => {
-    const { userId } = req.params;
-    try {
-        const query = await User.findByIdAndRemove(userId);
-
-        if (query) {
-            res.json({ message: 'Usuario eliminado con éxito' });
-        } else {
-            return res.status(404).json({ message: 'Usuario no encontrado' })
-        }
-    } catch (err) {
-        console.error(err);
-        return res.status(503).json({ message: err.message });
-    }
-}
-
-userCtrl.getCountAll = async(req, res) => {
-    try {
-        const query = await User.estimatedDocumentCount()
-        if (query >= 0) {
-            res.json({ nro_users: query })
-        }
-    } catch (err) {
-        console.error(err)
-        return res.status(503).json({ message: err.message })
-    }
-}
-
-userCtrl.getCountByStatus = async(req, res) => {
-    const { status } = req.body
-    try {
-        const query = await User.where({ status }).countDocuments()
-        if (query >= 0) {
-            res.json({ nro_users_status: query })
-        }
-    } catch (err) {
-        console.error(err)
-        return res.status(503).json({ message: err.message })
-    }
-}
-
-userCtrl.getCountByOnline = async(req, res) => {
-    const { online } = req.body
-    try {
-        const query = await User.where({ online }).countDocuments()
-        if (query >= 0) {
-            res.json({ nro_users_online: query })
-        }
-    } catch (err) {
-        console.error(err)
-        return res.status(503).json({ message: err.message })
-    }
+		if (query) {
+			res.json({ message: "Avatar subido con éxito" });
+		} else {
+			return res.status(404).json({ message: "Perfil no encontrado" });
+		}
+	} catch (err) {
+		console.log(err);
+		return res.status(503).json({ error: err.message });
+	}
 }
 
 export default userCtrl;

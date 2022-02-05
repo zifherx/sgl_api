@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.deleteMarca = exports.updateMarca = exports.createMarca = exports.getMarcaByActivo = exports.getMarcaById = exports.getAll = void 0;
+exports["default"] = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -13,7 +13,11 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 
 var _Marca = _interopRequireDefault(require("../models/Marca"));
 
-var getAll = /*#__PURE__*/function () {
+var _User = _interopRequireDefault(require("../models/User"));
+
+var marcaController = {};
+
+marcaController.getAll = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
     var query;
     return _regenerator["default"].wrap(function _callee$(_context) {
@@ -24,6 +28,9 @@ var getAll = /*#__PURE__*/function () {
             _context.next = 3;
             return _Marca["default"].find().sort({
               name: 'asc'
+            }).populate({
+              path: 'createdBy',
+              select: 'name username'
             });
 
           case 3:
@@ -34,7 +41,10 @@ var getAll = /*#__PURE__*/function () {
               break;
             }
 
-            res.json(query);
+            res.json({
+              total_brands: query.length,
+              all_brands: query
+            });
             _context.next = 9;
             break;
 
@@ -63,14 +73,12 @@ var getAll = /*#__PURE__*/function () {
     }, _callee, null, [[0, 11]]);
   }));
 
-  return function getAll(_x, _x2) {
+  return function (_x, _x2) {
     return _ref.apply(this, arguments);
   };
 }();
 
-exports.getAll = getAll;
-
-var getMarcaById = /*#__PURE__*/function () {
+marcaController.getMarcaById = /*#__PURE__*/function () {
   var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
     var marcaId, query;
     return _regenerator["default"].wrap(function _callee2$(_context2) {
@@ -80,7 +88,10 @@ var getMarcaById = /*#__PURE__*/function () {
             marcaId = req.params.marcaId;
             _context2.prev = 1;
             _context2.next = 4;
-            return _Marca["default"].findById(marcaId);
+            return _Marca["default"].findById(marcaId).populate({
+              path: 'createdBy',
+              select: 'name username'
+            });
 
           case 4:
             query = _context2.sent;
@@ -90,7 +101,9 @@ var getMarcaById = /*#__PURE__*/function () {
               break;
             }
 
-            res.json(query);
+            res.json({
+              brand: query
+            });
             _context2.next = 10;
             break;
 
@@ -107,9 +120,9 @@ var getMarcaById = /*#__PURE__*/function () {
             _context2.prev = 12;
             _context2.t0 = _context2["catch"](1);
             console.log(_context2.t0);
-            res.status(503).json({
+            return _context2.abrupt("return", res.status(503).json({
               message: _context2.t0.message
-            });
+            }));
 
           case 16:
           case "end":
@@ -119,14 +132,12 @@ var getMarcaById = /*#__PURE__*/function () {
     }, _callee2, null, [[1, 12]]);
   }));
 
-  return function getMarcaById(_x3, _x4) {
+  return function (_x3, _x4) {
     return _ref2.apply(this, arguments);
   };
 }();
 
-exports.getMarcaById = getMarcaById;
-
-var getMarcaByActivo = /*#__PURE__*/function () {
+marcaController.getMarcaByActivo = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
     var query;
     return _regenerator["default"].wrap(function _callee3$(_context3) {
@@ -139,63 +150,105 @@ var getMarcaByActivo = /*#__PURE__*/function () {
               status: true
             }).sort({
               name: 'asc'
+            }).populate({
+              path: 'createdBy',
+              select: 'name username'
             });
 
           case 3:
             query = _context3.sent;
 
-            if (query.length > 0) {
-              res.json(query);
-            } else {
-              res.status(404).json({
-                message: 'No existen Marcas Activas'
-              });
+            if (!(query.length > 0)) {
+              _context3.next = 8;
+              break;
             }
 
-            _context3.next = 11;
+            res.json({
+              total_actives: query.length,
+              active_brands: query
+            });
+            _context3.next = 9;
             break;
 
-          case 7:
-            _context3.prev = 7;
-            _context3.t0 = _context3["catch"](0);
-            console.log(_context3.t0);
-            res.status(503).json({
-              message: _context3.t0.message
-            });
+          case 8:
+            return _context3.abrupt("return", res.status(404).json({
+              message: 'No existen Marcas Activas'
+            }));
+
+          case 9:
+            _context3.next = 15;
+            break;
 
           case 11:
+            _context3.prev = 11;
+            _context3.t0 = _context3["catch"](0);
+            console.log(_context3.t0);
+            return _context3.abrupt("return", res.status(503).json({
+              message: _context3.t0.message
+            }));
+
+          case 15:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[0, 7]]);
+    }, _callee3, null, [[0, 11]]);
   }));
 
-  return function getMarcaByActivo(_x5, _x6) {
+  return function (_x5, _x6) {
     return _ref3.apply(this, arguments);
   };
 }();
 
-exports.getMarcaByActivo = getMarcaByActivo;
-
-var createMarca = /*#__PURE__*/function () {
+marcaController.createMarca = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
-    var _req$body, name, status, newMarca, query;
+    var _req$body, name, status, createdBy, avatar, obj, userFound, query;
 
     return _regenerator["default"].wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            _req$body = req.body, name = _req$body.name, status = _req$body.status;
-            _context4.prev = 1;
-            newMarca = new _Marca["default"]({
-              name: name,
-              status: status
+            _req$body = req.body, name = _req$body.name, status = _req$body.status, createdBy = _req$body.createdBy;
+            avatar = req.file;
+            _context4.prev = 2;
+            obj = null;
+            _context4.next = 6;
+            return _User["default"].findOne({
+              username: createdBy
             });
-            _context4.next = 5;
-            return newMarca.save();
 
-          case 5:
+          case 6:
+            userFound = _context4.sent;
+
+            if (userFound) {
+              _context4.next = 9;
+              break;
+            }
+
+            return _context4.abrupt("return", res.status(404).json({
+              message: 'No existe usuario'
+            }));
+
+          case 9:
+            if (avatar == undefined || avatar == null) {
+              obj = new _Marca["default"]({
+                name: name,
+                status: status
+              });
+              obj.createdBy = userFound._id;
+            } else {
+              obj = new _Marca["default"]({
+                name: name,
+                status: status,
+                avatar: avatar.location
+              });
+              obj.createdBy = userFound._id;
+            }
+
+            _context4.next = 12;
+            return obj.save();
+
+          case 12:
             query = _context4.sent;
 
             if (query) {
@@ -204,92 +257,116 @@ var createMarca = /*#__PURE__*/function () {
               });
             }
 
-            _context4.next = 13;
+            _context4.next = 20;
             break;
 
-          case 9:
-            _context4.prev = 9;
-            _context4.t0 = _context4["catch"](1);
+          case 16:
+            _context4.prev = 16;
+            _context4.t0 = _context4["catch"](2);
             console.log(_context4.t0);
-            res.status(503).json({
+            return _context4.abrupt("return", res.status(503).json({
               message: _context4.t0.message
-            });
+            }));
 
-          case 13:
+          case 20:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[1, 9]]);
+    }, _callee4, null, [[2, 16]]);
   }));
 
-  return function createMarca(_x7, _x8) {
+  return function (_x7, _x8) {
     return _ref4.apply(this, arguments);
   };
 }();
 
-exports.createMarca = createMarca;
-
-var updateMarca = /*#__PURE__*/function () {
+marcaController.updateMarca = /*#__PURE__*/function () {
   var _ref5 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res) {
-    var _req$body2, name, status, marcaId, _updateMarca;
+    var marcaId, _req$body2, name, status, avatar, query;
 
     return _regenerator["default"].wrap(function _callee5$(_context5) {
       while (1) {
         switch (_context5.prev = _context5.next) {
           case 0:
-            _req$body2 = req.body, name = _req$body2.name, status = _req$body2.status;
             marcaId = req.params.marcaId;
-            _context5.prev = 2;
-            _context5.next = 5;
+            _req$body2 = req.body, name = _req$body2.name, status = _req$body2.status;
+            avatar = req.file;
+            _context5.prev = 3;
+            query = null;
+
+            if (!(avatar == null || avatar == undefined)) {
+              _context5.next = 11;
+              break;
+            }
+
+            _context5.next = 8;
             return _Marca["default"].findByIdAndUpdate(marcaId, {
               name: name,
               status: status
             });
 
-          case 5:
-            _updateMarca = _context5.sent;
-
-            if (_updateMarca) {
-              res.json({
-                message: 'Marca actualizada con éxito'
-              });
-            } else {
-              res.status(404).json({
-                message: 'No existe Marca a eliminar'
-              });
-            }
-
-            _context5.next = 13;
+          case 8:
+            query = _context5.sent;
+            _context5.next = 14;
             break;
 
-          case 9:
-            _context5.prev = 9;
-            _context5.t0 = _context5["catch"](2);
-            console.log(_context5.t0);
-            res.status(503).json({
-              message: _context5.t0.message
+          case 11:
+            _context5.next = 13;
+            return _Marca["default"].findByIdAndUpdate(marcaId, {
+              name: name,
+              status: status,
+              avatar: avatar.location
             });
 
           case 13:
+            query = _context5.sent;
+
+          case 14:
+            if (!query) {
+              _context5.next = 18;
+              break;
+            }
+
+            res.json({
+              message: 'Marca actualizada con éxito'
+            });
+            _context5.next = 19;
+            break;
+
+          case 18:
+            return _context5.abrupt("return", res.status(404).json({
+              message: 'No existe Marca a eliminar'
+            }));
+
+          case 19:
+            _context5.next = 25;
+            break;
+
+          case 21:
+            _context5.prev = 21;
+            _context5.t0 = _context5["catch"](3);
+            console.log(_context5.t0);
+            return _context5.abrupt("return", res.status(503).json({
+              message: _context5.t0.message
+            }));
+
+          case 25:
           case "end":
             return _context5.stop();
         }
       }
-    }, _callee5, null, [[2, 9]]);
+    }, _callee5, null, [[3, 21]]);
   }));
 
-  return function updateMarca(_x9, _x10) {
+  return function (_x9, _x10) {
     return _ref5.apply(this, arguments);
   };
 }();
 
-exports.updateMarca = updateMarca;
-
-var deleteMarca = /*#__PURE__*/function () {
+marcaController.deleteMarca = /*#__PURE__*/function () {
   var _ref6 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(req, res) {
-    var marcaId, _deleteMarca;
-
+    var marcaId, query;
     return _regenerator["default"].wrap(function _callee6$(_context6) {
       while (1) {
         switch (_context6.prev = _context6.next) {
@@ -300,9 +377,9 @@ var deleteMarca = /*#__PURE__*/function () {
             return _Marca["default"].findByIdAndDelete(marcaId);
 
           case 4:
-            _deleteMarca = _context6.sent;
+            query = _context6.sent;
 
-            if (!_deleteMarca) {
+            if (!query) {
               _context6.next = 9;
               break;
             }
@@ -326,9 +403,9 @@ var deleteMarca = /*#__PURE__*/function () {
             _context6.prev = 12;
             _context6.t0 = _context6["catch"](1);
             console.log(_context6.t0);
-            res.status(503).json({
+            return _context6.abrupt("return", res.status(503).json({
               message: _context6.t0.message
-            });
+            }));
 
           case 16:
           case "end":
@@ -338,10 +415,11 @@ var deleteMarca = /*#__PURE__*/function () {
     }, _callee6, null, [[1, 12]]);
   }));
 
-  return function deleteMarca(_x11, _x12) {
+  return function (_x11, _x12) {
     return _ref6.apply(this, arguments);
   };
 }();
 
-exports.deleteMarca = deleteMarca;
+var _default = marcaController;
+exports["default"] = _default;
 //# sourceMappingURL=marca.controller.js.map

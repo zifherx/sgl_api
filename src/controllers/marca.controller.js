@@ -1,10 +1,18 @@
 import Marca from "../models/Marca";
+import User from "../models/User";
 
-export const getAll = async(req, res) => {
+const marcaController = {};
+
+marcaController.getAll = async(req, res) => {
     try {
-        const query = await Marca.find().sort({ name: 'asc' });
+        const query = await Marca.find()
+        .sort({ name: 'asc' })
+        .populate({
+            path: 'createdBy',
+            select: 'name username',
+        });
         if (query.length > 0) {
-            res.json(query);
+            res.json({total_brands: query.length, all_brands: query});
         } else {
             return res.status(404).json({ message: 'No existen Marcas' })
         }
@@ -14,79 +22,116 @@ export const getAll = async(req, res) => {
     }
 }
 
-export const getMarcaById = async(req, res) => {
+marcaController.getMarcaById = async(req, res) => {
     const { marcaId } = req.params;
     try {
-        const query = await Marca.findById(marcaId);
+        const query = await Marca.findById(marcaId)
+        .populate({
+            path: 'createdBy',
+            select: 'name username',
+        });
         if (query) {
-            res.json(query);
+            res.json({brand: query});
         } else {
             return res.status(404).json({ message: 'No existe Marca' })
         }
     } catch (err) {
         console.log(err)
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({ message: err.message })
     }
 }
 
-export const getMarcaByActivo = async(req, res) => {
+marcaController.getMarcaByActivo = async(req, res) => {
     try {
-        const query = await Marca.find({ status: true }).sort({ name: 'asc' });
+        const query = await Marca.find({ status: true })
+        .sort({ name: 'asc' })
+        .populate({
+            path: 'createdBy',
+            select: 'name username',
+        });
         if (query.length > 0) {
-            res.json(query);
+            res.json({total_actives: query.length, active_brands: query});
         } else {
-            res.status(404).json({ message: 'No existen Marcas Activas' })
+            return res.status(404).json({ message: 'No existen Marcas Activas' })
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message });
+        return res.status(503).json({ message: err.message });
     }
 }
 
-export const createMarca = async(req, res) => {
-    const { name, status } = req.body;
+marcaController.createMarca = async(req, res) => {
+    const { name, status,createdBy } = req.body;
+    const avatar = req.file;
     try {
-        const newMarca = new Marca({ name, status });
+        let obj = null;
 
-        const query = await newMarca.save();
+        const userFound =  await User.findOne({username: createdBy});
+        if(!userFound) return res.status(404).json({message: 'No existe usuario'});
+
+        if(avatar == undefined || avatar == null){
+            obj = new Marca({ name, status });
+            obj.createdBy = userFound._id;
+        }else{
+            obj = new Marca({ 
+                name,
+                status,
+                avatar: avatar.location
+            });
+            obj.createdBy = userFound._id;
+        }
+
+        const query = await obj.save();
 
         if (query) {
             res.json({ message: 'Marca creada con éxito' })
         }
     } catch (err) {
         console.log(err)
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({ message: err.message })
     }
 }
 
-export const updateMarca = async(req, res) => {
-    const { name, status } = req.body;
+marcaController.updateMarca = async(req, res) => {
     const { marcaId } = req.params;
+    const { name, status } = req.body;
+    const avatar = req.file;
     try {
-        const updateMarca = await Marca.findByIdAndUpdate(marcaId, { name, status });
+        let query = null;
 
-        if (updateMarca) {
+        if(avatar == null || avatar == undefined){
+            query = await Marca.findByIdAndUpdate(marcaId, { name, status });
+        }else{
+            query = await Marca.findByIdAndUpdate(marcaId, {
+                name,
+                status,
+                avatar: avatar.location
+            });
+        }
+        if (query) {
             res.json({ message: 'Marca actualizada con éxito' });
         } else {
-            res.status(404).json({ message: 'No existe Marca a eliminar' });
+            return res.status(404).json({ message: 'No existe Marca a eliminar' });
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({ message: err.message })
     }
 }
 
-export const deleteMarca = async(req, res) => {
+marcaController.deleteMarca = async(req, res) => {
     const { marcaId } = req.params;
     try {
-        const deleteMarca = await Marca.findByIdAndDelete(marcaId);
-        if (deleteMarca) {
+        const query = await Marca.findByIdAndDelete(marcaId);
+        if (query) {
             res.json({ message: 'Marca eliminada con éxito' });
         } else {
             return res.status(404).json({ message: 'No existe Marca a eliminar' });
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({ message: err.message })
     }
 }
+
+export default marcaController;

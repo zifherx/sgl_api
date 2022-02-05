@@ -15,18 +15,11 @@ var _Seller = _interopRequireDefault(require("../models/Seller"));
 
 var _User = _interopRequireDefault(require("../models/User"));
 
-var _cloudinary = _interopRequireDefault(require("cloudinary"));
+var _Marca = _interopRequireDefault(require("../models/Marca"));
 
-var _fsExtra = _interopRequireDefault(require("fs-extra"));
+var _Sucursal = _interopRequireDefault(require("../models/Sucursal"));
 
 var sellerCtrl = {};
-
-_cloudinary["default"].config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET // secure: true
-
-});
 
 sellerCtrl.getAll = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
@@ -38,8 +31,17 @@ sellerCtrl.getAll = /*#__PURE__*/function () {
             _context.prev = 0;
             _context.next = 3;
             return _Seller["default"].find().sort({
-              name: 'asc'
-            }).populate('userCreator');
+              name: "asc"
+            }).populate({
+              path: "marca",
+              select: "name avatar"
+            }).populate({
+              path: "sucursal",
+              select: "name"
+            }).populate({
+              path: "createdBy",
+              select: "name username"
+            });
 
           case 3:
             query = _context.sent;
@@ -49,13 +51,16 @@ sellerCtrl.getAll = /*#__PURE__*/function () {
               break;
             }
 
-            res.json(query);
+            res.json({
+              total_sellers: query.length,
+              all_sellers: query
+            });
             _context.next = 9;
             break;
 
           case 8:
             return _context.abrupt("return", res.status(404).json({
-              message: 'No existen Asesores de Ventas'
+              message: "No existen Asesores de Ventas"
             }));
 
           case 9:
@@ -93,7 +98,16 @@ sellerCtrl.getOne = /*#__PURE__*/function () {
             sellerId = req.params.sellerId;
             _context2.prev = 1;
             _context2.next = 4;
-            return _Seller["default"].findById(sellerId).populate('userCreator');
+            return _Seller["default"].findById(sellerId).populate({
+              path: "marca",
+              select: "name avatar"
+            }).populate({
+              path: "sucursal",
+              select: "name"
+            }).populate({
+              path: "createdBy",
+              select: "name username"
+            });
 
           case 4:
             query = _context2.sent;
@@ -103,13 +117,15 @@ sellerCtrl.getOne = /*#__PURE__*/function () {
               break;
             }
 
-            res.json(query);
+            res.json({
+              seller: query
+            });
             _context2.next = 10;
             break;
 
           case 9:
             return _context2.abrupt("return", res.status(404).json({
-              message: 'No existe el Asesor de Ventas'
+              message: "No existe el Asesor de Ventas"
             }));
 
           case 10:
@@ -139,58 +155,108 @@ sellerCtrl.getOne = /*#__PURE__*/function () {
 
 sellerCtrl.createSeller = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
-    var _req$body, name, document, sucursal, userCreator, newSeller, userFound, query;
+    var _req$body, name, document, cellphone, email, tipo, marca, sucursal, status, createdBy, userFound, marcaFound, sucursalFound, obj, query;
 
     return _regenerator["default"].wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            _req$body = req.body, name = _req$body.name, document = _req$body.document, sucursal = _req$body.sucursal, userCreator = _req$body.userCreator;
+            _req$body = req.body, name = _req$body.name, document = _req$body.document, cellphone = _req$body.cellphone, email = _req$body.email, tipo = _req$body.tipo, marca = _req$body.marca, sucursal = _req$body.sucursal, status = _req$body.status, createdBy = _req$body.createdBy;
             _context3.prev = 1;
-            newSeller = new _Seller["default"]({
-              name: name,
-              document: document,
-              sucursal: sucursal
-            });
-            _context3.next = 5;
-            return _User["default"].find({
-              username: userCreator
+            _context3.next = 4;
+            return _User["default"].findOne({
+              username: createdBy
             });
 
-          case 5:
+          case 4:
             userFound = _context3.sent;
-            newSeller.userCreator = userFound.map(function (a) {
-              return a._id;
-            });
+
+            if (userFound) {
+              _context3.next = 7;
+              break;
+            }
+
+            return _context3.abrupt("return", res.status(404).json({
+              message: "No existe el usuario ".concat(createdBy)
+            }));
+
+          case 7:
             _context3.next = 9;
-            return newSeller.save();
+            return _Marca["default"].findOne({
+              name: marca
+            });
 
           case 9:
+            marcaFound = _context3.sent;
+
+            if (marcaFound) {
+              _context3.next = 12;
+              break;
+            }
+
+            return _context3.abrupt("return", res.status(404).json({
+              message: "No existe la marca ".concat(marca)
+            }));
+
+          case 12:
+            _context3.next = 14;
+            return _Sucursal["default"].findOne({
+              name: sucursal
+            });
+
+          case 14:
+            sucursalFound = _context3.sent;
+
+            if (sucursalFound) {
+              _context3.next = 17;
+              break;
+            }
+
+            return _context3.abrupt("return", res.status(404).json({
+              message: "No existe la sucursal ".concat(sucursal)
+            }));
+
+          case 17:
+            obj = new _Seller["default"]({
+              name: name,
+              document: document,
+              cellphone: cellphone,
+              email: email,
+              tipo: tipo,
+              status: status
+            });
+            obj.marca = marcaFound._id;
+            obj.sucursal = sucursalFound._id;
+            obj.createdBy = userFound._id;
+            _context3.next = 23;
+            return obj.save();
+
+          case 23:
             query = _context3.sent;
 
             if (query) {
               res.json({
-                message: 'Asesor de Ventas creado con éxito'
+                message: "Asesor de Ventas creado con éxito"
               });
             }
 
-            _context3.next = 17;
+            _context3.next = 31;
             break;
 
-          case 13:
-            _context3.prev = 13;
+          case 27:
+            _context3.prev = 27;
             _context3.t0 = _context3["catch"](1);
             console.error(_context3.t0);
             return _context3.abrupt("return", res.status(503).json({
               message: _context3.t0.message
             }));
 
-          case 17:
+          case 31:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[1, 13]]);
+    }, _callee3, null, [[1, 27]]);
   }));
 
   return function (_x5, _x6) {
@@ -200,60 +266,99 @@ sellerCtrl.createSeller = /*#__PURE__*/function () {
 
 sellerCtrl.updateSeller = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
-    var sellerId, _req$body2, name, document, sucursal, status, query;
+    var sellerId, _req$body2, name, document, cellphone, email, tipo, marca, sucursal, status, marcaFound, sucursalFound, query;
 
     return _regenerator["default"].wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
             sellerId = req.params.sellerId;
-            _req$body2 = req.body, name = _req$body2.name, document = _req$body2.document, sucursal = _req$body2.sucursal, status = _req$body2.status;
+            _req$body2 = req.body, name = _req$body2.name, document = _req$body2.document, cellphone = _req$body2.cellphone, email = _req$body2.email, tipo = _req$body2.tipo, marca = _req$body2.marca, sucursal = _req$body2.sucursal, status = _req$body2.status;
             _context4.prev = 2;
             _context4.next = 5;
-            return _Seller["default"].findByIdAndUpdate(sellerId, {
-              name: name,
-              document: document,
-              sucursal: sucursal,
-              status: status
+            return _Marca["default"].findOne({
+              name: marca
             });
 
           case 5:
+            marcaFound = _context4.sent;
+            _context4.next = 8;
+            return _Sucursal["default"].findOne({
+              name: sucursal
+            });
+
+          case 8:
+            sucursalFound = _context4.sent;
+
+            if (marcaFound) {
+              _context4.next = 11;
+              break;
+            }
+
+            return _context4.abrupt("return", res.status(404).json({
+              message: "No existe la marca ".concat(marca)
+            }));
+
+          case 11:
+            if (sucursalFound) {
+              _context4.next = 13;
+              break;
+            }
+
+            return _context4.abrupt("return", res.status(404).json({
+              message: "No existe la sucursal ".concat(sucursal)
+            }));
+
+          case 13:
+            _context4.next = 15;
+            return _Seller["default"].findByIdAndUpdate(sellerId, {
+              name: name,
+              document: document,
+              cellphone: cellphone,
+              email: email,
+              tipo: tipo,
+              marca: marcaFound._id,
+              sucursal: sucursalFound._id,
+              status: status
+            });
+
+          case 15:
             query = _context4.sent;
 
             if (!query) {
-              _context4.next = 10;
+              _context4.next = 20;
               break;
             }
 
             res.json({
-              message: 'Asesor de Ventas actualizado con éxito'
+              message: "Asesor de Ventas actualizado con éxito"
             });
-            _context4.next = 11;
+            _context4.next = 21;
             break;
 
-          case 10:
+          case 20:
             return _context4.abrupt("return", res.status(404).json({
-              message: 'Asesor de Ventas no encontrado'
+              message: "Asesor de Ventas no encontrado"
             }));
 
-          case 11:
-            _context4.next = 17;
+          case 21:
+            _context4.next = 27;
             break;
 
-          case 13:
-            _context4.prev = 13;
+          case 23:
+            _context4.prev = 23;
             _context4.t0 = _context4["catch"](2);
             console.error(_context4.t0);
             return _context4.abrupt("return", res.status(503).json({
               message: _context4.t0.message
             }));
 
-          case 17:
+          case 27:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[2, 13]]);
+    }, _callee4, null, [[2, 23]]);
   }));
 
   return function (_x7, _x8) {
@@ -282,14 +387,14 @@ sellerCtrl.deleteSeller = /*#__PURE__*/function () {
             }
 
             res.json({
-              message: 'Asesor de Ventas eliminado con éxito'
+              message: "Asesor de Ventas eliminado con éxito"
             });
             _context5.next = 10;
             break;
 
           case 9:
             return _context5.abrupt("return", res.status(404).json({
-              message: 'Asesor de Ventas no encontrado'
+              message: "Asesor de Ventas no encontrado"
             }));
 
           case 10:
@@ -326,14 +431,14 @@ sellerCtrl.getCountAll = /*#__PURE__*/function () {
           case 0:
             _context6.prev = 0;
             _context6.next = 3;
-            return _Seller["default"].estimatedDocumentCount();
+            return _Seller["default"].countDocuments();
 
           case 3:
             query = _context6.sent;
 
             if (query >= 0) {
               res.json({
-                nro_seller: query
+                total_count: query
               });
             }
 
@@ -373,7 +478,16 @@ sellerCtrl.getSellersByActive = /*#__PURE__*/function () {
             return _Seller["default"].find({
               status: true
             }).sort({
-              name: 'asc'
+              name: "asc"
+            }).populate({
+              path: "marca",
+              select: "name avatar"
+            }).populate({
+              path: "sucursal",
+              select: "name"
+            }).populate({
+              path: "createdBy",
+              select: "name username"
             });
 
           case 3:
@@ -384,13 +498,16 @@ sellerCtrl.getSellersByActive = /*#__PURE__*/function () {
               break;
             }
 
-            res.json(query);
+            res.json({
+              total_actives: query.length,
+              active_actives: query
+            });
             _context7.next = 9;
             break;
 
           case 8:
             return _context7.abrupt("return", res.status(404).json({
-              message: 'No existen Asesores de Ventas Activos'
+              message: "No existen Asesores de Ventas Activos"
             }));
 
           case 9:
@@ -420,55 +537,71 @@ sellerCtrl.getSellersByActive = /*#__PURE__*/function () {
 
 sellerCtrl.getSellersBySucursal = /*#__PURE__*/function () {
   var _ref8 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(req, res) {
-    var sucursal_seller, query;
+    var sucursal, query, obj;
     return _regenerator["default"].wrap(function _callee8$(_context8) {
       while (1) {
         switch (_context8.prev = _context8.next) {
           case 0:
-            sucursal_seller = req.body.sucursal_seller;
+            sucursal = req.body.sucursal;
             _context8.prev = 1;
             _context8.next = 4;
-            return _Seller["default"].find({
-              sucursal: sucursal_seller
-            }).sort({
-              name: 'asc'
+            return _Seller["default"].find().sort({
+              name: "asc"
+            }).populate({
+              path: "marca",
+              select: "name avatar"
+            }).populate({
+              path: "sucursal",
+              select: "name",
+              match: {
+                name: sucursal
+              }
+            }).populate({
+              path: "createdBy",
+              select: "name username"
             });
 
           case 4:
             query = _context8.sent;
+            obj = query.filter(function (a) {
+              return a.sucursal;
+            });
 
-            if (!(query.length > 0)) {
-              _context8.next = 9;
+            if (!(obj.length > 0)) {
+              _context8.next = 10;
               break;
             }
 
-            res.json(query);
-            _context8.next = 10;
+            res.json({
+              total: obj.length,
+              deploy: obj
+            });
+            _context8.next = 11;
             break;
-
-          case 9:
-            return _context8.abrupt("return", res.status(404).json({
-              message: "No existen Asesores de Ventas en ".concat(sucursal_seller)
-            }));
 
           case 10:
-            _context8.next = 16;
+            return _context8.abrupt("return", res.status(404).json({
+              message: "No existen Asesores de Ventas en ".concat(sucursal)
+            }));
+
+          case 11:
+            _context8.next = 17;
             break;
 
-          case 12:
-            _context8.prev = 12;
+          case 13:
+            _context8.prev = 13;
             _context8.t0 = _context8["catch"](1);
             console.error(_context8.t0);
             return _context8.abrupt("return", res.status(503).json({
               message: _context8.t0.message
             }));
 
-          case 16:
+          case 17:
           case "end":
             return _context8.stop();
         }
       }
-    }, _callee8, null, [[1, 12]]);
+    }, _callee8, null, [[1, 13]]);
   }));
 
   return function (_x15, _x16) {
@@ -478,67 +611,56 @@ sellerCtrl.getSellersBySucursal = /*#__PURE__*/function () {
 
 sellerCtrl.updatePhoto = /*#__PURE__*/function () {
   var _ref9 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(req, res) {
-    var sellerId, archivo, respuesta, query;
+    var sellerId, avatar, query;
     return _regenerator["default"].wrap(function _callee9$(_context9) {
       while (1) {
         switch (_context9.prev = _context9.next) {
           case 0:
-            sellerId = req.body.sellerId;
-            archivo = req.file;
+            sellerId = req.params.sellerId;
+            avatar = req.file;
             _context9.prev = 2;
             _context9.next = 5;
-            return _cloudinary["default"].uploader.upload(archivo.path);
-
-          case 5:
-            respuesta = _context9.sent;
-            _context9.next = 8;
             return _Seller["default"].findByIdAndUpdate(sellerId, {
-              rutaPerfil: respuesta.secure_url,
-              titlePerfil: respuesta.public_id
+              avatar: avatar.location
             });
 
-          case 8:
+          case 5:
             query = _context9.sent;
 
             if (!query) {
-              _context9.next = 15;
+              _context9.next = 10;
               break;
             }
 
-            _context9.next = 12;
-            return _fsExtra["default"].unlink(archivo.path);
-
-          case 12:
-            //Elimina ruta del servidor
             res.json({
-              message: 'Foto de Vendedor subida con éxito'
+              message: "Foto de Vendedor subida con éxito"
             });
-            _context9.next = 16;
+            _context9.next = 11;
             break;
 
-          case 15:
+          case 10:
             return _context9.abrupt("return", res.status(404).json({
-              message: 'Vendedor no encontrado'
+              message: "Vendedor no encontrado"
             }));
 
-          case 16:
-            _context9.next = 22;
+          case 11:
+            _context9.next = 17;
             break;
 
-          case 18:
-            _context9.prev = 18;
+          case 13:
+            _context9.prev = 13;
             _context9.t0 = _context9["catch"](2);
             console.error(_context9.t0);
             return _context9.abrupt("return", res.status(503).json({
               message: _context9.t0.message
             }));
 
-          case 22:
+          case 17:
           case "end":
             return _context9.stop();
         }
       }
-    }, _callee9, null, [[2, 18]]);
+    }, _callee9, null, [[2, 13]]);
   }));
 
   return function (_x17, _x18) {

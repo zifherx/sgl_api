@@ -1,4 +1,5 @@
-import 'dotenv/config'
+import {config} from 'dotenv';
+config();
 
 export default {
     SECRET: 'API_SGL_AUTONORT',

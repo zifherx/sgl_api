@@ -15,7 +15,19 @@ var _Lead = _interopRequireDefault(require("../models/Lead"));
 
 var _User = _interopRequireDefault(require("../models/User"));
 
+var _Sucursal = _interopRequireDefault(require("../models/Sucursal"));
+
+var _OriginData = _interopRequireDefault(require("../models/OriginData"));
+
+var _Vehicle = _interopRequireDefault(require("../models/Vehicle"));
+
+var _Financiamiento = _interopRequireDefault(require("../models/Financiamiento"));
+
+var _Banco = _interopRequireDefault(require("../models/Banco"));
+
 var _Seller = _interopRequireDefault(require("../models/Seller"));
+
+var _EstadoConversion = _interopRequireDefault(require("../models/EstadoConversion"));
 
 var leadCtrl = {};
 
@@ -28,8 +40,45 @@ leadCtrl.getAll = /*#__PURE__*/function () {
           case 0:
             _context.prev = 0;
             _context.next = 3;
-            return _Lead["default"].find().populate('asesorVenta userCreator').sort({
-              name: 'asc'
+            return _Lead["default"].find().populate({
+              path: "sucursal_lead",
+              select: "name"
+            }).populate({
+              path: "dataOrigin",
+              select: "name"
+            }).populate({
+              path: "tipoFinanciamiento",
+              select: "tipo"
+            }).populate({
+              path: "entidad_bancaria",
+              select: "name avatar"
+            }).populate({
+              path: "estado_conversion",
+              select: "name"
+            }).populate({
+              path: "auto",
+              select: "chasis model cod_tdp, version",
+              populate: [{
+                path: "chasis",
+                select: "name"
+              }, {
+                path: "model",
+                select: "name marca avatar",
+                populate: {
+                  path: "marca",
+                  select: "name avatar"
+                }
+              }]
+            }).populate({
+              path: "asesorAsignado",
+              select: "name tipo marca avatar",
+              populate: {
+                path: "marca",
+                select: "name avatar"
+              }
+            }).populate({
+              path: "createdBy",
+              select: "name username"
             });
 
           case 3:
@@ -41,15 +90,15 @@ leadCtrl.getAll = /*#__PURE__*/function () {
             }
 
             res.json({
-              nro_leads: query.length,
-              leads: query
+              total: query.length,
+              all_leads: query
             });
             _context.next = 9;
             break;
 
           case 8:
             return _context.abrupt("return", res.status(404).json({
-              message: 'No existen Leads'
+              message: "No existen leads"
             }));
 
           case 9:
@@ -59,7 +108,7 @@ leadCtrl.getAll = /*#__PURE__*/function () {
           case 11:
             _context.prev = 11;
             _context.t0 = _context["catch"](0);
-            console.error(_context.t0);
+            console.log(_context.t0);
             return _context.abrupt("return", res.status(503).json({
               message: _context.t0.message
             }));
@@ -77,58 +126,94 @@ leadCtrl.getAll = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.getLeadsIngresados = /*#__PURE__*/function () {
+leadCtrl.getOneById = /*#__PURE__*/function () {
   var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
-    var query;
+    var leadId, query;
     return _regenerator["default"].wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            _context2.prev = 0;
-            _context2.next = 3;
-            return _Lead["default"].where({
-              status_asignado: false,
-              statusLead: false
-            }).populate('asesorVenta userCreator');
+            leadId = req.params.leadId;
+            _context2.prev = 1;
+            _context2.next = 4;
+            return _Lead["default"].findById(leadId).populate({
+              path: "sucursal_lead",
+              select: "name"
+            }).populate({
+              path: "dataOrigin",
+              select: "name"
+            }).populate({
+              path: "tipoFinanciamiento",
+              select: "name"
+            }).populate({
+              path: "entidad_bancaria",
+              select: "name avatar"
+            }).populate({
+              path: "estado_conversion",
+              select: "name"
+            }).populate({
+              path: "auto",
+              select: "chasis model cod_tdp version",
+              populate: [{
+                path: "chasis",
+                select: "name"
+              }, {
+                path: "model",
+                select: "name marca avatar",
+                populate: {
+                  path: "marca",
+                  select: "name avatar"
+                }
+              }]
+            }).populate({
+              path: "asesorAsignado",
+              select: "name tipo marca avatar",
+              populate: {
+                path: "marca",
+                select: "name avatar"
+              }
+            }).populate({
+              path: "createdBy",
+              select: "name username"
+            });
 
-          case 3:
+          case 4:
             query = _context2.sent;
 
-            if (!(query.length > 0)) {
-              _context2.next = 8;
+            if (!query) {
+              _context2.next = 9;
               break;
             }
 
             res.json({
-              nro_leads: query.length,
-              leads: query
+              lead: query
             });
-            _context2.next = 9;
+            _context2.next = 10;
             break;
-
-          case 8:
-            return _context2.abrupt("return", res.status(404).json({
-              message: 'No existen nuevos Leads'
-            }));
 
           case 9:
-            _context2.next = 15;
+            return _context2.abrupt("return", res.status(404).json({
+              message: "No existen el lead"
+            }));
+
+          case 10:
+            _context2.next = 16;
             break;
 
-          case 11:
-            _context2.prev = 11;
-            _context2.t0 = _context2["catch"](0);
-            console.error(_context2.t0);
+          case 12:
+            _context2.prev = 12;
+            _context2.t0 = _context2["catch"](1);
+            console.log(_context2.t0);
             return _context2.abrupt("return", res.status(503).json({
               message: _context2.t0.message
             }));
 
-          case 15:
+          case 16:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[0, 11]]);
+    }, _callee2, null, [[1, 12]]);
   }));
 
   return function (_x3, _x4) {
@@ -136,58 +221,92 @@ leadCtrl.getLeadsIngresados = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.getLeadsAsignados = /*#__PURE__*/function () {
+leadCtrl.createOne = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
-    var query;
+    var _req$body, dataOrigin, customer_name, customer_document, customer_city, customer_cellphone, customer_cellphone2, customer_email, fecha_ingreso, createdBy, newObj, originFound, userFound, query;
+
     return _regenerator["default"].wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            _context3.prev = 0;
-            _context3.next = 3;
-            return _Lead["default"].where({
-              status_asignado: true,
-              statusLead: false
-            }).find().populate('asesorVenta');
+            _req$body = req.body, dataOrigin = _req$body.dataOrigin, customer_name = _req$body.customer_name, customer_document = _req$body.customer_document, customer_city = _req$body.customer_city, customer_cellphone = _req$body.customer_cellphone, customer_cellphone2 = _req$body.customer_cellphone2, customer_email = _req$body.customer_email, fecha_ingreso = _req$body.fecha_ingreso, createdBy = _req$body.createdBy;
+            _context3.prev = 1;
+            newObj = new _Lead["default"]({
+              customer_name: customer_name,
+              customer_document: customer_document,
+              customer_city: customer_city,
+              customer_cellphone: customer_cellphone,
+              customer_cellphone2: customer_cellphone2,
+              customer_email: customer_email,
+              fecha_ingreso: fecha_ingreso
+            });
+            _context3.next = 5;
+            return _OriginData["default"].findOne({
+              name: dataOrigin
+            });
 
-          case 3:
-            query = _context3.sent;
+          case 5:
+            originFound = _context3.sent;
 
-            if (!(query.length > 0)) {
+            if (originFound) {
               _context3.next = 8;
               break;
             }
 
-            res.json({
-              nro_leads: query.length,
-              leads: query
-            });
-            _context3.next = 9;
-            break;
-
-          case 8:
             return _context3.abrupt("return", res.status(404).json({
-              message: 'No existen Leads asignados'
+              message: "Origen ".concat(dataOrigin, " no encontrada")
             }));
 
-          case 9:
-            _context3.next = 15;
-            break;
+          case 8:
+            newObj.dataOrigin = originFound._id;
+            _context3.next = 11;
+            return _User["default"].findOne({
+              username: createdBy
+            });
 
           case 11:
-            _context3.prev = 11;
-            _context3.t0 = _context3["catch"](0);
-            console.error(_context3.t0);
+            userFound = _context3.sent;
+
+            if (userFound) {
+              _context3.next = 14;
+              break;
+            }
+
+            return _context3.abrupt("return", res.status(404).json({
+              message: "Empleado ".concat(createdBy, " no encontrado")
+            }));
+
+          case 14:
+            newObj.createdBy = userFound._id;
+            _context3.next = 17;
+            return newObj.save();
+
+          case 17:
+            query = _context3.sent;
+
+            if (query) {
+              res.json({
+                message: "Lead creado con éxito"
+              });
+            }
+
+            _context3.next = 25;
+            break;
+
+          case 21:
+            _context3.prev = 21;
+            _context3.t0 = _context3["catch"](1);
+            console.log(_context3.t0);
             return _context3.abrupt("return", res.status(503).json({
               message: _context3.t0.message
             }));
 
-          case 15:
+          case 25:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[0, 11]]);
+    }, _callee3, null, [[1, 21]]);
   }));
 
   return function (_x5, _x6) {
@@ -195,58 +314,81 @@ leadCtrl.getLeadsAsignados = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.getLeadsAtendidos = /*#__PURE__*/function () {
+leadCtrl.isNoInteresado = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
-    var query;
+    var leadId, _req$body2, estado_lead, isNoInteresado, sucursal, fecha_noInteresado, motivo_rechazo, sucursalFound, query;
+
     return _regenerator["default"].wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            _context4.prev = 0;
-            _context4.next = 3;
-            return _Lead["default"].where({
-              status_asignado: true,
-              statusLead: true
-            }).find().populate('asesorVenta userCreator');
+            leadId = req.params.leadId;
+            _req$body2 = req.body, estado_lead = _req$body2.estado_lead, isNoInteresado = _req$body2.isNoInteresado, sucursal = _req$body2.sucursal, fecha_noInteresado = _req$body2.fecha_noInteresado, motivo_rechazo = _req$body2.motivo_rechazo;
+            _context4.prev = 2;
+            _context4.next = 5;
+            return _Sucursal["default"].findOne({
+              name: sucursal
+            });
 
-          case 3:
-            query = _context4.sent;
+          case 5:
+            sucursalFound = _context4.sent;
 
-            if (!(query.length > 0)) {
+            if (sucursalFound) {
               _context4.next = 8;
               break;
             }
 
-            res.json({
-              nro_leads: query.length,
-              leads: query
-            });
-            _context4.next = 9;
-            break;
-
-          case 8:
             return _context4.abrupt("return", res.status(404).json({
-              message: 'No existen Leads atendidos'
+              message: "Sucursal ".concat(sucursal, " no encontrada")
             }));
 
-          case 9:
-            _context4.next = 15;
+          case 8:
+            _context4.next = 10;
+            return _Lead["default"].findByIdAndUpdate(leadId, {
+              estado_lead: estado_lead,
+              isNoInteresado: isNoInteresado,
+              sucursal_lead: sucursalFound._id,
+              fecha_noInteresado: fecha_noInteresado,
+              motivo_rechazo: motivo_rechazo
+            });
+
+          case 10:
+            query = _context4.sent;
+
+            if (!query) {
+              _context4.next = 15;
+              break;
+            }
+
+            res.json({
+              message: "Lead actualizado con éxito"
+            });
+            _context4.next = 16;
             break;
 
-          case 11:
-            _context4.prev = 11;
-            _context4.t0 = _context4["catch"](0);
-            console.error(_context4.t0);
+          case 15:
+            return _context4.abrupt("return", res.status(404).json({
+              message: "Lead no encontrado para actualizar"
+            }));
+
+          case 16:
+            _context4.next = 22;
+            break;
+
+          case 18:
+            _context4.prev = 18;
+            _context4.t0 = _context4["catch"](2);
+            console.log(_context4.t0);
             return _context4.abrupt("return", res.status(503).json({
               message: _context4.t0.message
             }));
 
-          case 15:
+          case 22:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[0, 11]]);
+    }, _callee4, null, [[2, 18]]);
   }));
 
   return function (_x7, _x8) {
@@ -254,53 +396,166 @@ leadCtrl.getLeadsAtendidos = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.getOne = /*#__PURE__*/function () {
+leadCtrl.isAtendido = /*#__PURE__*/function () {
   var _ref5 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(req, res) {
-    var leadId, query;
+    var leadId, _req$body3, estado_lead, isAtendido, fecha_atencion, comentario, observacion, sucursal, auto, financiamiento, entidad_bancaria, tentativa_inicial, precioUnidad, query, sucursalFound, autoFound, financiamientoFound, bancoFound;
+
     return _regenerator["default"].wrap(function _callee5$(_context5) {
       while (1) {
         switch (_context5.prev = _context5.next) {
           case 0:
             leadId = req.params.leadId;
-            _context5.prev = 1;
-            _context5.next = 4;
-            return _Lead["default"].findById(leadId).populate('asesorVenta userCreator');
+            _req$body3 = req.body, estado_lead = _req$body3.estado_lead, isAtendido = _req$body3.isAtendido, fecha_atencion = _req$body3.fecha_atencion, comentario = _req$body3.comentario, observacion = _req$body3.observacion, sucursal = _req$body3.sucursal, auto = _req$body3.auto, financiamiento = _req$body3.financiamiento, entidad_bancaria = _req$body3.entidad_bancaria, tentativa_inicial = _req$body3.tentativa_inicial, precioUnidad = _req$body3.precioUnidad;
+            _context5.prev = 2;
+            query = null;
+            _context5.next = 6;
+            return _Sucursal["default"].findOne({
+              name: sucursal
+            });
 
-          case 4:
-            query = _context5.sent;
+          case 6:
+            sucursalFound = _context5.sent;
+            _context5.next = 9;
+            return _Vehicle["default"].findOne({
+              cod_tdp: auto
+            });
 
-            if (!query) {
-              _context5.next = 9;
+          case 9:
+            autoFound = _context5.sent;
+            _context5.next = 12;
+            return _Financiamiento["default"].findOne({
+              name: financiamiento
+            });
+
+          case 12:
+            financiamientoFound = _context5.sent;
+
+            if (sucursalFound) {
+              _context5.next = 15;
               break;
             }
 
-            res.json(query);
-            _context5.next = 10;
-            break;
-
-          case 9:
             return _context5.abrupt("return", res.status(404).json({
-              message: "No existe el Lead ".concat(leadId)
+              message: "Sucursal ".concat(sucursal, " no encontrada")
             }));
 
-          case 10:
-            _context5.next = 16;
+          case 15:
+            if (autoFound) {
+              _context5.next = 17;
+              break;
+            }
+
+            return _context5.abrupt("return", res.status(404).json({
+              message: "Veh\xEDculo ".concat(auto, " no encontrado")
+            }));
+
+          case 17:
+            if (financiamientoFound) {
+              _context5.next = 19;
+              break;
+            }
+
+            return _context5.abrupt("return", res.status(404).json({
+              message: "Tipo de financiamiento ".concat(financiamiento, " no encontrado")
+            }));
+
+          case 19:
+            if (!(entidad_bancaria == null || entidad_bancaria == undefined)) {
+              _context5.next = 25;
+              break;
+            }
+
+            _context5.next = 22;
+            return _Lead["default"].findByIdAndUpdate(leadId, {
+              sucursal_lead: sucursalFound._id,
+              estado_lead: estado_lead,
+              isAtendido: isAtendido,
+              fecha_atencion: fecha_atencion,
+              comentario: comentario,
+              observacion: observacion,
+              auto: autoFound._id,
+              tipoFinanciamiento: financiamientoFound._id,
+              tentativa_inicial: tentativa_inicial,
+              precioUnidad: precioUnidad
+            });
+
+          case 22:
+            query = _context5.sent;
+            _context5.next = 33;
             break;
 
-          case 12:
-            _context5.prev = 12;
-            _context5.t0 = _context5["catch"](1);
-            console.error(_context5.t0);
+          case 25:
+            _context5.next = 27;
+            return _Banco["default"].findOne({
+              name: entidad_bancaria
+            });
+
+          case 27:
+            bancoFound = _context5.sent;
+
+            if (bancoFound) {
+              _context5.next = 30;
+              break;
+            }
+
+            return _context5.abrupt("return", res.status(404).json({
+              message: "Entidad ".concat(entidad_bancaria, " no encontrado")
+            }));
+
+          case 30:
+            _context5.next = 32;
+            return _Lead["default"].findByIdAndUpdate(leadId, {
+              sucursal_lead: sucursalFound._id,
+              estado_lead: estado_lead,
+              isAtendido: isAtendido,
+              fecha_atencion: fecha_atencion,
+              comentario: comentario,
+              observacion: observacion,
+              auto: autoFound._id,
+              tipoFinanciamiento: financiamientoFound._id,
+              entidad_bancaria: bancoFound._id,
+              tentativa_inicial: tentativa_inicial,
+              precioUnidad: precioUnidad
+            });
+
+          case 32:
+            query = _context5.sent;
+
+          case 33:
+            if (!query) {
+              _context5.next = 37;
+              break;
+            }
+
+            res.json({
+              message: "Lead actualizado con éxito"
+            });
+            _context5.next = 38;
+            break;
+
+          case 37:
+            return _context5.abrupt("return", res.status(404).json({
+              message: "Lead no encontrado para actualizar"
+            }));
+
+          case 38:
+            _context5.next = 44;
+            break;
+
+          case 40:
+            _context5.prev = 40;
+            _context5.t0 = _context5["catch"](2);
+            console.log(_context5.t0);
             return _context5.abrupt("return", res.status(503).json({
               message: _context5.t0.message
             }));
 
-          case 16:
+          case 44:
           case "end":
             return _context5.stop();
         }
       }
-    }, _callee5, null, [[1, 12]]);
+    }, _callee5, null, [[2, 40]]);
   }));
 
   return function (_x9, _x10) {
@@ -308,68 +563,166 @@ leadCtrl.getOne = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.createLead = /*#__PURE__*/function () {
+leadCtrl.isAsignacion = /*#__PURE__*/function () {
   var _ref6 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(req, res) {
-    var _req$body, sucursal_lead, dataOrigin, customer_name, customer_document, customer_address, customer_city, customer_cellphone, customer_email, fecha_ingreso, fecha_asignacion, fecha_atencion, userCreator, newObj, userFound, query;
+    var leadId, _req$body4, estado_lead, isAsignado, fecha_asignacion, comentario, observacion, asesorAsignado, auto, financiamiento, entidad_bancaria, tentativa_inicial, precioUnidad, query, asesorFound, autoFound, financiamientoFound, bancoFound;
 
     return _regenerator["default"].wrap(function _callee6$(_context6) {
       while (1) {
         switch (_context6.prev = _context6.next) {
           case 0:
-            _req$body = req.body, sucursal_lead = _req$body.sucursal_lead, dataOrigin = _req$body.dataOrigin, customer_name = _req$body.customer_name, customer_document = _req$body.customer_document, customer_address = _req$body.customer_address, customer_city = _req$body.customer_city, customer_cellphone = _req$body.customer_cellphone, customer_email = _req$body.customer_email, fecha_ingreso = _req$body.fecha_ingreso, fecha_asignacion = _req$body.fecha_asignacion, fecha_atencion = _req$body.fecha_atencion, userCreator = _req$body.userCreator;
-            _context6.prev = 1;
-            newObj = new _Lead["default"]({
-              sucursal_lead: sucursal_lead,
-              dataOrigin: dataOrigin,
-              customer_name: customer_name,
-              customer_document: customer_document,
-              customer_address: customer_address,
-              customer_city: customer_city,
-              customer_cellphone: customer_cellphone,
-              customer_email: customer_email,
-              fecha_ingreso: fecha_ingreso,
-              fecha_asignacion: fecha_asignacion,
-              fecha_atencion: fecha_atencion
-            });
-            _context6.next = 5;
-            return _User["default"].find({
-              username: userCreator
+            leadId = req.params.leadId;
+            _req$body4 = req.body, estado_lead = _req$body4.estado_lead, isAsignado = _req$body4.isAsignado, fecha_asignacion = _req$body4.fecha_asignacion, comentario = _req$body4.comentario, observacion = _req$body4.observacion, asesorAsignado = _req$body4.asesorAsignado, auto = _req$body4.auto, financiamiento = _req$body4.financiamiento, entidad_bancaria = _req$body4.entidad_bancaria, tentativa_inicial = _req$body4.tentativa_inicial, precioUnidad = _req$body4.precioUnidad;
+            _context6.prev = 2;
+            query = null;
+            _context6.next = 6;
+            return _Seller["default"].findOne({
+              name: asesorAsignado
             });
 
-          case 5:
-            userFound = _context6.sent;
-            newObj.userCreator = userFound.map(function (a) {
-              return a._id;
-            });
+          case 6:
+            asesorFound = _context6.sent;
             _context6.next = 9;
-            return newObj.save();
+            return _Vehicle["default"].findOne({
+              cod_tdp: auto
+            });
 
           case 9:
-            query = _context6.sent;
+            autoFound = _context6.sent;
+            _context6.next = 12;
+            return _Financiamiento["default"].findOne({
+              name: financiamiento
+            });
 
-            if (query) {
-              res.json({
-                message: 'Lead creado con éxito'
-              });
+          case 12:
+            financiamientoFound = _context6.sent;
+
+            if (asesorFound) {
+              _context6.next = 15;
+              break;
             }
 
-            _context6.next = 17;
+            return _context6.abrupt("return", res.status(404).json({
+              message: "Asesor ".concat(asesorAsignado, " no encontrado")
+            }));
+
+          case 15:
+            if (autoFound) {
+              _context6.next = 17;
+              break;
+            }
+
+            return _context6.abrupt("return", res.status(404).json({
+              message: "Veh\xEDculo ".concat(auto, " no encontrado")
+            }));
+
+          case 17:
+            if (financiamientoFound) {
+              _context6.next = 19;
+              break;
+            }
+
+            return _context6.abrupt("return", res.status(404).json({
+              message: "Tipo de financiamiento ".concat(financiamiento, " no encontrado")
+            }));
+
+          case 19:
+            if (!(entidad_bancaria == null || entidad_bancaria == undefined)) {
+              _context6.next = 25;
+              break;
+            }
+
+            _context6.next = 22;
+            return _Lead["default"].findByIdAndUpdate(leadId, {
+              estado_lead: estado_lead,
+              isAsignado: isAsignado,
+              fecha_asignacion: fecha_asignacion,
+              comentario: comentario,
+              observacion: observacion,
+              asesorAsignado: asesorFound._id,
+              auto: autoFound._id,
+              tipoFinanciamiento: financiamientoFound._id,
+              tentativa_inicial: tentativa_inicial,
+              precioUnidad: precioUnidad
+            });
+
+          case 22:
+            query = _context6.sent;
+            _context6.next = 33;
             break;
 
-          case 13:
-            _context6.prev = 13;
-            _context6.t0 = _context6["catch"](1);
-            console.error(_context6.t0);
+          case 25:
+            _context6.next = 27;
+            return _Banco["default"].findOne({
+              name: entidad_bancaria
+            });
+
+          case 27:
+            bancoFound = _context6.sent;
+
+            if (bancoFound) {
+              _context6.next = 30;
+              break;
+            }
+
+            return _context6.abrupt("return", res.status(404).json({
+              message: "Entidad ".concat(entidad_bancaria, " no encontrado")
+            }));
+
+          case 30:
+            _context6.next = 32;
+            return _Lead["default"].findByIdAndUpdate(leadId, {
+              estado_lead: estado_lead,
+              isAsignado: isAsignado,
+              fecha_asignacion: fecha_asignacion,
+              comentario: comentario,
+              observacion: observacion,
+              asesorAsignado: asesorFound._id,
+              auto: autoFound._id,
+              tipoFinanciamiento: financiamientoFound._id,
+              entidad_bancaria: bancoFound._id,
+              tentativa_inicial: tentativa_inicial,
+              precioUnidad: precioUnidad
+            });
+
+          case 32:
+            query = _context6.sent;
+
+          case 33:
+            if (!query) {
+              _context6.next = 37;
+              break;
+            }
+
+            res.json({
+              message: "Lead actualizado con éxito"
+            });
+            _context6.next = 38;
+            break;
+
+          case 37:
+            return _context6.abrupt("return", res.status(404).json({
+              message: "Lead no encontrado para actualizar"
+            }));
+
+          case 38:
+            _context6.next = 44;
+            break;
+
+          case 40:
+            _context6.prev = 40;
+            _context6.t0 = _context6["catch"](2);
+            console.log(_context6.t0);
             return _context6.abrupt("return", res.status(503).json({
               message: _context6.t0.message
             }));
 
-          case 17:
+          case 44:
           case "end":
             return _context6.stop();
         }
       }
-    }, _callee6, null, [[1, 13]]);
+    }, _callee6, null, [[2, 40]]);
   }));
 
   return function (_x11, _x12) {
@@ -377,82 +730,128 @@ leadCtrl.createLead = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.asignarLead = /*#__PURE__*/function () {
+leadCtrl.isCotizado = /*#__PURE__*/function () {
   var _ref7 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7(req, res) {
-    var leadId, _req$body2, status_asignado, fecha_asignacion, asesorVenta, jefeAsignador, jefeFound, sellerFound, query;
+    var leadId, _req$body5, financiamiento, entidad_bancaria, tentativa_inicial, precioUnidad, estado_lead, isCotizado, fecha_cotizacion, comentario, observacion, query, financiamientoFound, bancoFound;
 
     return _regenerator["default"].wrap(function _callee7$(_context7) {
       while (1) {
         switch (_context7.prev = _context7.next) {
           case 0:
             leadId = req.params.leadId;
-            _req$body2 = req.body, status_asignado = _req$body2.status_asignado, fecha_asignacion = _req$body2.fecha_asignacion, asesorVenta = _req$body2.asesorVenta, jefeAsignador = _req$body2.jefeAsignador;
+            _req$body5 = req.body, financiamiento = _req$body5.financiamiento, entidad_bancaria = _req$body5.entidad_bancaria, tentativa_inicial = _req$body5.tentativa_inicial, precioUnidad = _req$body5.precioUnidad, estado_lead = _req$body5.estado_lead, isCotizado = _req$body5.isCotizado, fecha_cotizacion = _req$body5.fecha_cotizacion, comentario = _req$body5.comentario, observacion = _req$body5.observacion;
             _context7.prev = 2;
-            _context7.next = 5;
-            return _User["default"].find({
-              username: jefeAsignador
+            query = null;
+            _context7.next = 6;
+            return _Financiamiento["default"].findOne({
+              name: financiamiento
             });
 
-          case 5:
-            jefeFound = _context7.sent;
-            _context7.next = 8;
-            return _Seller["default"].find({
-              name: {
-                $in: asesorVenta
-              }
-            });
+          case 6:
+            financiamientoFound = _context7.sent;
 
-          case 8:
-            sellerFound = _context7.sent;
-            _context7.next = 11;
+            if (financiamientoFound) {
+              _context7.next = 9;
+              break;
+            }
+
+            return _context7.abrupt("return", res.status(404).json({
+              message: "Tipo de financiamiento ".concat(financiamiento, " no encontrado")
+            }));
+
+          case 9:
+            if (!(entidad_bancaria == null || entidad_bancaria == undefined)) {
+              _context7.next = 15;
+              break;
+            }
+
+            _context7.next = 12;
             return _Lead["default"].findByIdAndUpdate(leadId, {
-              status_asignado: status_asignado,
-              fecha_asignacion: fecha_asignacion,
-              asesorVenta: sellerFound.map(function (a) {
-                return a._id;
-              }),
-              jefeAsignador: jefeFound.map(function (b) {
-                return b._id;
-              })
+              tipoFinanciamiento: financiamientoFound._id,
+              tentativa_inicial: tentativa_inicial,
+              precioUnidad: precioUnidad,
+              estado_lead: estado_lead,
+              isCotizado: isCotizado,
+              fecha_cotizacion: fecha_cotizacion,
+              comentario: comentario,
+              observacion: observacion
             });
 
-          case 11:
+          case 12:
+            query = _context7.sent;
+            _context7.next = 23;
+            break;
+
+          case 15:
+            _context7.next = 17;
+            return _Banco["default"].findOne({
+              name: entidad_bancaria
+            });
+
+          case 17:
+            bancoFound = _context7.sent;
+
+            if (bancoFound) {
+              _context7.next = 20;
+              break;
+            }
+
+            return _context7.abrupt("return", res.status(404).json({
+              message: "Entidad ".concat(entidad_bancaria, " no encontrado")
+            }));
+
+          case 20:
+            _context7.next = 22;
+            return _Lead["default"].findByIdAndUpdate(leadId, {
+              tipoFinanciamiento: financiamientoFound._id,
+              entidad_bancaria: bancoFound._id,
+              tentativa_inicial: tentativa_inicial,
+              precioUnidad: precioUnidad,
+              estado_lead: estado_lead,
+              isCotizado: isCotizado,
+              fecha_cotizacion: fecha_cotizacion,
+              comentario: comentario,
+              observacion: observacion
+            });
+
+          case 22:
             query = _context7.sent;
 
+          case 23:
             if (!query) {
-              _context7.next = 16;
+              _context7.next = 27;
               break;
             }
 
             res.json({
-              message: 'Lead asignado con éxito'
+              message: "Lead actualizado con éxito"
             });
-            _context7.next = 17;
+            _context7.next = 28;
             break;
 
-          case 16:
+          case 27:
             return _context7.abrupt("return", res.status(404).json({
-              message: 'Lead no encontrado'
+              message: "Lead no encontrado para actualizar"
             }));
 
-          case 17:
-            _context7.next = 23;
+          case 28:
+            _context7.next = 34;
             break;
 
-          case 19:
-            _context7.prev = 19;
+          case 30:
+            _context7.prev = 30;
             _context7.t0 = _context7["catch"](2);
-            console.error(_context7.t0);
+            console.log(_context7.t0);
             return _context7.abrupt("return", res.status(503).json({
               message: _context7.t0.message
             }));
 
-          case 23:
+          case 34:
           case "end":
             return _context7.stop();
         }
       }
-    }, _callee7, null, [[2, 19]]);
+    }, _callee7, null, [[2, 30]]);
   }));
 
   return function (_x13, _x14) {
@@ -460,76 +859,64 @@ leadCtrl.asignarLead = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.atenderLead = /*#__PURE__*/function () {
+leadCtrl.isDeclinado = /*#__PURE__*/function () {
   var _ref8 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(req, res) {
-    var leadId, _req$body3, statusLead, modeloVehiculo, versionVehiculo, fecha_atencion, comentario, tipo_pago, valorUnidad, tipo_financiamiento, asesorAtencion, sellerFound, query;
+    var leadId, _req$body6, estado_lead, isDeclinado, fecha_declinado, motivo_desistencia, comentario, observacion, query;
 
     return _regenerator["default"].wrap(function _callee8$(_context8) {
       while (1) {
         switch (_context8.prev = _context8.next) {
           case 0:
             leadId = req.params.leadId;
-            _req$body3 = req.body, statusLead = _req$body3.statusLead, modeloVehiculo = _req$body3.modeloVehiculo, versionVehiculo = _req$body3.versionVehiculo, fecha_atencion = _req$body3.fecha_atencion, comentario = _req$body3.comentario, tipo_pago = _req$body3.tipo_pago, valorUnidad = _req$body3.valorUnidad, tipo_financiamiento = _req$body3.tipo_financiamiento, asesorAtencion = _req$body3.asesorAtencion;
+            _req$body6 = req.body, estado_lead = _req$body6.estado_lead, isDeclinado = _req$body6.isDeclinado, fecha_declinado = _req$body6.fecha_declinado, motivo_desistencia = _req$body6.motivo_desistencia, comentario = _req$body6.comentario, observacion = _req$body6.observacion;
             _context8.prev = 2;
             _context8.next = 5;
-            return _User["default"].find({
-              username: asesorAtencion
+            return _Lead["default"].findByIdAndUpdate(leadId, {
+              estado_lead: estado_lead,
+              isDeclinado: isDeclinado,
+              fecha_declinado: fecha_declinado,
+              motivo_desistencia: motivo_desistencia,
+              comentario: comentario,
+              observacion: observacion
             });
 
           case 5:
-            sellerFound = _context8.sent;
-            _context8.next = 8;
-            return _Lead["default"].findByIdAndUpdate(leadId, {
-              statusLead: statusLead,
-              modeloVehiculo: modeloVehiculo,
-              versionVehiculo: versionVehiculo,
-              fecha_atencion: fecha_atencion,
-              comentario: comentario,
-              tipo_pago: tipo_pago,
-              valorUnidad: valorUnidad,
-              tipo_financiamiento: tipo_financiamiento,
-              asesorAtencion: sellerFound.map(function (a) {
-                return a._id;
-              })
-            });
-
-          case 8:
             query = _context8.sent;
 
             if (!query) {
-              _context8.next = 13;
+              _context8.next = 10;
               break;
             }
 
             res.json({
-              message: 'Lead actualizado con éxito'
+              message: "Lead actualizado con éxito"
             });
-            _context8.next = 14;
+            _context8.next = 11;
+            break;
+
+          case 10:
+            return _context8.abrupt("return", res.status(404).json({
+              message: "Lead no encontrado para actualizar"
+            }));
+
+          case 11:
+            _context8.next = 17;
             break;
 
           case 13:
-            return _context8.abrupt("return", res.status(404).json({
-              message: 'Lead no encontrado'
-            }));
-
-          case 14:
-            _context8.next = 20;
-            break;
-
-          case 16:
-            _context8.prev = 16;
+            _context8.prev = 13;
             _context8.t0 = _context8["catch"](2);
-            console.error(_context8.t0);
+            console.log(_context8.t0);
             return _context8.abrupt("return", res.status(503).json({
               message: _context8.t0.message
             }));
 
-          case 20:
+          case 17:
           case "end":
             return _context8.stop();
         }
       }
-    }, _callee8, null, [[2, 16]]);
+    }, _callee8, null, [[2, 13]]);
   }));
 
   return function (_x15, _x16) {
@@ -537,60 +924,80 @@ leadCtrl.atenderLead = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.actualizarVenta = /*#__PURE__*/function () {
+leadCtrl.isConvertido = /*#__PURE__*/function () {
   var _ref9 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(req, res) {
-    var leadId, _req$body4, lead_convertido, estatus_venta, query;
+    var leadId, _req$body7, estado_lead, estado_conversion, isConvertido, fecha_conversion, statusFound, query;
 
     return _regenerator["default"].wrap(function _callee9$(_context9) {
       while (1) {
         switch (_context9.prev = _context9.next) {
           case 0:
             leadId = req.params.leadId;
-            _req$body4 = req.body, lead_convertido = _req$body4.lead_convertido, estatus_venta = _req$body4.estatus_venta;
+            _req$body7 = req.body, estado_lead = _req$body7.estado_lead, estado_conversion = _req$body7.estado_conversion, isConvertido = _req$body7.isConvertido, fecha_conversion = _req$body7.fecha_conversion;
             _context9.prev = 2;
             _context9.next = 5;
-            return _Lead["default"].findByIdAndUpdate(leadId, {
-              lead_convertido: lead_convertido,
-              estatus_venta: estatus_venta
+            return _EstadoConversion["default"].findOne({
+              name: estado_conversion
             });
 
           case 5:
+            statusFound = _context9.sent;
+
+            if (statusFound) {
+              _context9.next = 8;
+              break;
+            }
+
+            return _context9.abrupt("return", res.status(404).json({
+              message: "Estado ".concat(estado_conversion, " no encontrado")
+            }));
+
+          case 8:
+            _context9.next = 10;
+            return _Lead["default"].findByIdAndUpdate(leadId, {
+              estado_lead: estado_lead,
+              estado_conversion: statusFound._id,
+              isConvertido: isConvertido,
+              fecha_conversion: fecha_conversion
+            });
+
+          case 10:
             query = _context9.sent;
 
             if (!query) {
-              _context9.next = 10;
+              _context9.next = 15;
               break;
             }
 
             res.json({
-              message: 'Estatus de Venta actualizado con éxito'
+              message: "Lead actualizado con éxito"
             });
-            _context9.next = 11;
+            _context9.next = 16;
             break;
 
-          case 10:
+          case 15:
             return _context9.abrupt("return", res.status(404).json({
-              message: 'Venta no encontrada'
+              message: "Lead no encontrado para actualizar"
             }));
 
-          case 11:
-            _context9.next = 17;
+          case 16:
+            _context9.next = 22;
             break;
 
-          case 13:
-            _context9.prev = 13;
+          case 18:
+            _context9.prev = 18;
             _context9.t0 = _context9["catch"](2);
-            console.error(_context9.t0);
+            console.log(_context9.t0);
             return _context9.abrupt("return", res.status(503).json({
               message: _context9.t0.message
             }));
 
-          case 17:
+          case 22:
           case "end":
             return _context9.stop();
         }
       }
-    }, _callee9, null, [[2, 13]]);
+    }, _callee9, null, [[2, 18]]);
   }));
 
   return function (_x17, _x18) {
@@ -598,55 +1005,79 @@ leadCtrl.actualizarVenta = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.deleteLead = /*#__PURE__*/function () {
+leadCtrl.isBooking = /*#__PURE__*/function () {
   var _ref10 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee10(req, res) {
-    var leadId, query;
+    var leadId, _req$body8, estado_conversion, isBooking, fecha_booking, statusFound, query;
+
     return _regenerator["default"].wrap(function _callee10$(_context10) {
       while (1) {
         switch (_context10.prev = _context10.next) {
           case 0:
             leadId = req.params.leadId;
-            _context10.prev = 1;
-            _context10.next = 4;
-            return _Lead["default"].findByIdAndRemove(leadId);
+            _req$body8 = req.body, estado_conversion = _req$body8.estado_conversion, isBooking = _req$body8.isBooking, fecha_booking = _req$body8.fecha_booking;
+            _context10.prev = 2;
+            _context10.next = 5;
+            return _EstadoConversion["default"].findOne({
+              name: estado_conversion
+            });
 
-          case 4:
+          case 5:
+            statusFound = _context10.sent;
+
+            if (statusFound) {
+              _context10.next = 8;
+              break;
+            }
+
+            return _context10.abrupt("return", res.status(404).json({
+              message: "Estado ".concat(estado_conversion, " no encontrado")
+            }));
+
+          case 8:
+            _context10.next = 10;
+            return _Lead["default"].findByIdAndUpdate(leadId, {
+              estado_conversion: statusFound._id,
+              isBooking: isBooking,
+              fecha_booking: fecha_booking
+            });
+
+          case 10:
             query = _context10.sent;
 
             if (!query) {
-              _context10.next = 9;
+              _context10.next = 15;
               break;
             }
 
             res.json({
-              message: 'Lead eliminado con éxito'
+              message: "Lead actualizado con éxito"
             });
-            _context10.next = 10;
-            break;
-
-          case 9:
-            return _context10.abrupt("return", res.status(404).json({
-              message: 'Lead no encontrado'
-            }));
-
-          case 10:
             _context10.next = 16;
             break;
 
-          case 12:
-            _context10.prev = 12;
-            _context10.t0 = _context10["catch"](1);
-            console.error(_context10.t0);
+          case 15:
+            return _context10.abrupt("return", res.status(404).json({
+              message: "Lead no encontrado para actualizar"
+            }));
+
+          case 16:
+            _context10.next = 22;
+            break;
+
+          case 18:
+            _context10.prev = 18;
+            _context10.t0 = _context10["catch"](2);
+            console.log(_context10.t0);
             return _context10.abrupt("return", res.status(503).json({
               message: _context10.t0.message
             }));
 
-          case 16:
+          case 22:
           case "end":
             return _context10.stop();
         }
       }
-    }, _callee10, null, [[1, 12]]);
+    }, _callee10, null, [[2, 18]]);
   }));
 
   return function (_x19, _x20) {
@@ -654,43 +1085,79 @@ leadCtrl.deleteLead = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.getCountAll = /*#__PURE__*/function () {
+leadCtrl.isDown = /*#__PURE__*/function () {
   var _ref11 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee11(req, res) {
-    var query;
+    var leadId, _req$body9, estado_conversion, isDown, fecha_down, statusFound, query;
+
     return _regenerator["default"].wrap(function _callee11$(_context11) {
       while (1) {
         switch (_context11.prev = _context11.next) {
           case 0:
-            _context11.prev = 0;
-            _context11.next = 3;
-            return _Lead["default"].estimatedDocumentCount();
+            leadId = req.params.leadId;
+            _req$body9 = req.body, estado_conversion = _req$body9.estado_conversion, isDown = _req$body9.isDown, fecha_down = _req$body9.fecha_down;
+            _context11.prev = 2;
+            _context11.next = 5;
+            return _EstadoConversion["default"].findOne({
+              name: estado_conversion
+            });
 
-          case 3:
-            query = _context11.sent;
+          case 5:
+            statusFound = _context11.sent;
 
-            if (query >= 0) {
-              res.json({
-                nro_Leads: query
-              });
+            if (statusFound) {
+              _context11.next = 8;
+              break;
             }
 
-            _context11.next = 11;
+            return _context11.abrupt("return", res.status(404).json({
+              message: "Estado ".concat(estado_conversion, " no encontrado")
+            }));
+
+          case 8:
+            _context11.next = 10;
+            return _Lead["default"].findByIdAndUpdate(leadId, {
+              estado_conversion: statusFound._id,
+              isDown: isDown,
+              fecha_down: fecha_down
+            });
+
+          case 10:
+            query = _context11.sent;
+
+            if (!query) {
+              _context11.next = 15;
+              break;
+            }
+
+            res.json({
+              message: "Lead actualizado con éxito"
+            });
+            _context11.next = 16;
             break;
 
-          case 7:
-            _context11.prev = 7;
-            _context11.t0 = _context11["catch"](0);
-            console.error(_context11.t0);
+          case 15:
+            return _context11.abrupt("return", res.status(404).json({
+              message: "Lead no encontrado para actualizar"
+            }));
+
+          case 16:
+            _context11.next = 22;
+            break;
+
+          case 18:
+            _context11.prev = 18;
+            _context11.t0 = _context11["catch"](2);
+            console.log(_context11.t0);
             return _context11.abrupt("return", res.status(503).json({
               message: _context11.t0.message
             }));
 
-          case 11:
+          case 22:
           case "end":
             return _context11.stop();
         }
       }
-    }, _callee11, null, [[0, 7]]);
+    }, _callee11, null, [[2, 18]]);
   }));
 
   return function (_x21, _x22) {
@@ -698,79 +1165,79 @@ leadCtrl.getCountAll = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.getCountByStatus = /*#__PURE__*/function () {
+leadCtrl.isVenta = /*#__PURE__*/function () {
   var _ref12 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee12(req, res) {
-    var _req$body5, atendidos, asignados, query, query2;
+    var leadId, _req$body10, estado_conversion, isVenta, fecha_venta, statusFound, query;
 
     return _regenerator["default"].wrap(function _callee12$(_context12) {
       while (1) {
         switch (_context12.prev = _context12.next) {
           case 0:
-            _req$body5 = req.body, atendidos = _req$body5.atendidos, asignados = _req$body5.asignados;
-            _context12.prev = 1;
-
-            if (!atendidos) {
-              _context12.next = 10;
-              break;
-            }
-
+            leadId = req.params.leadId;
+            _req$body10 = req.body, estado_conversion = _req$body10.estado_conversion, isVenta = _req$body10.isVenta, fecha_venta = _req$body10.fecha_venta;
+            _context12.prev = 2;
             _context12.next = 5;
-            return _Lead["default"].where({
-              statusLead: atendidos
-            }).find().countDocuments();
+            return _EstadoConversion["default"].findOne({
+              name: estado_conversion
+            });
 
           case 5:
-            query = _context12.sent;
+            statusFound = _context12.sent;
 
-            if (!(query >= 0)) {
+            if (statusFound) {
               _context12.next = 8;
               break;
             }
 
-            return _context12.abrupt("return", res.json({
-              leads_atendidos: query
+            return _context12.abrupt("return", res.status(404).json({
+              message: "Estado ".concat(estado_conversion, " no encontrado")
             }));
 
           case 8:
-            _context12.next = 15;
-            break;
+            _context12.next = 10;
+            return _Lead["default"].findByIdAndUpdate(leadId, {
+              estado_conversion: statusFound._id,
+              isVenta: isVenta,
+              fecha_venta: fecha_venta
+            });
 
           case 10:
-            _context12.next = 12;
-            return _Lead["default"].where({
-              status_asignado: asignados
-            }).find().countDocuments();
+            query = _context12.sent;
 
-          case 12:
-            query2 = _context12.sent;
-
-            if (!(query2 >= 0)) {
+            if (!query) {
               _context12.next = 15;
               break;
             }
 
-            return _context12.abrupt("return", res.json({
-              leads_asignados: query2
-            }));
-
-          case 15:
-            _context12.next = 21;
+            res.json({
+              message: "Lead actualizado con éxito"
+            });
+            _context12.next = 16;
             break;
 
-          case 17:
-            _context12.prev = 17;
-            _context12.t0 = _context12["catch"](1);
+          case 15:
+            return _context12.abrupt("return", res.status(404).json({
+              message: "Lead no encontrado para actualizar"
+            }));
+
+          case 16:
+            _context12.next = 22;
+            break;
+
+          case 18:
+            _context12.prev = 18;
+            _context12.t0 = _context12["catch"](2);
             console.log(_context12.t0);
             return _context12.abrupt("return", res.status(503).json({
               message: _context12.t0.message
             }));
 
-          case 21:
+          case 22:
           case "end":
             return _context12.stop();
         }
       }
-    }, _callee12, null, [[1, 17]]);
+    }, _callee12, null, [[2, 18]]);
   }));
 
   return function (_x23, _x24) {
@@ -778,40 +1245,35 @@ leadCtrl.getCountByStatus = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.conteoVentasByStatus = /*#__PURE__*/function () {
+leadCtrl.deleteOneById = /*#__PURE__*/function () {
   var _ref13 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee13(req, res) {
-    var estado_venta, query;
+    var leadId, query;
     return _regenerator["default"].wrap(function _callee13$(_context13) {
       while (1) {
         switch (_context13.prev = _context13.next) {
           case 0:
-            estado_venta = req.body.estado_venta;
+            leadId = req.params.leadId;
             _context13.prev = 1;
             _context13.next = 4;
-            return _Lead["default"].where({
-              status_asignado: true,
-              statusLead: true,
-              estatus_venta: estado_venta
-            }).find().countDocuments();
+            return _Lead["default"].findByIdAndDelete(leadId);
 
           case 4:
             query = _context13.sent;
 
-            if (!(query >= 0)) {
+            if (!query) {
               _context13.next = 9;
               break;
             }
 
             res.json({
-              status_elegido: estado_venta,
-              countVentas: query
+              message: "Lead eliminado con éxito"
             });
             _context13.next = 10;
             break;
 
           case 9:
             return _context13.abrupt("return", res.status(404).json({
-              message: "No existen ventas en ".concat(estado_venta)
+              message: "Lead no encontrado para eliminar"
             }));
 
           case 10:
@@ -839,74 +1301,103 @@ leadCtrl.conteoVentasByStatus = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.conteoLeadsAsignadosByVendedor = /*#__PURE__*/function () {
+leadCtrl.leadsBySucursalFecha = /*#__PURE__*/function () {
   var _ref14 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee14(req, res) {
-    var _req$body6, sucursal, statusAsignado, start, end, filter, query;
+    var _req$body11, start, end, query;
 
     return _regenerator["default"].wrap(function _callee14$(_context14) {
       while (1) {
         switch (_context14.prev = _context14.next) {
           case 0:
-            _req$body6 = req.body, sucursal = _req$body6.sucursal, statusAsignado = _req$body6.statusAsignado, start = _req$body6.start, end = _req$body6.end;
+            _req$body11 = req.body, start = _req$body11.start, end = _req$body11.end;
             _context14.prev = 1;
-            filter = {
-              sucursal_lead: sucursal,
-              status_asignado: statusAsignado,
+            _context14.next = 4;
+            return _Lead["default"].find({
               fecha_ingreso: {
                 $gte: new Date(start),
                 $lte: new Date(end)
               }
-            };
-            _context14.next = 5;
-            return _Lead["default"].aggregate([{
-              $match: filter
-            }, {
-              $group: {
-                _id: '$asesorVenta',
-                leads_asignados: {
-                  $sum: 1
+            }).sort({
+              fecha_ingreso: -1
+            }).populate({
+              path: "sucursal_lead",
+              select: "name"
+            }).populate({
+              path: "dataOrigin",
+              select: "name"
+            }).populate({
+              path: "tipoFinanciamiento",
+              select: "tipo"
+            }).populate({
+              path: "entidad_bancaria",
+              select: "name avatar"
+            }).populate({
+              path: "estado_conversion",
+              select: "name"
+            }).populate({
+              path: "auto",
+              select: "chasis model cod_tdp, version",
+              populate: [{
+                path: "chasis",
+                select: "name"
+              }, {
+                path: "model",
+                select: "name marca avatar",
+                populate: {
+                  path: "marca",
+                  select: "name avatar"
                 }
+              }]
+            }).populate({
+              path: "asesorAsignado",
+              select: "name tipo marca avatar",
+              populate: {
+                path: "marca",
+                select: "name avatar"
               }
-            }]);
+            }).populate({
+              path: "createdBy",
+              select: "name username"
+            });
 
-          case 5:
+          case 4:
             query = _context14.sent;
 
             if (!(query.length > 0)) {
-              _context14.next = 10;
+              _context14.next = 9;
               break;
             }
 
             res.json({
-              nro_vendedores: query.length,
-              tablero: query
+              total: query.length,
+              leads: query
             });
-            _context14.next = 11;
+            _context14.next = 10;
             break;
 
-          case 10:
+          case 9:
             return _context14.abrupt("return", res.status(404).json({
-              message: 'No existe data aún'
+              message: "No existen leads"
             }));
 
-          case 11:
-            _context14.next = 17;
+          case 10:
+            _context14.next = 16;
             break;
 
-          case 13:
-            _context14.prev = 13;
+          case 12:
+            _context14.prev = 12;
             _context14.t0 = _context14["catch"](1);
             console.log(_context14.t0);
             return _context14.abrupt("return", res.status(503).json({
               message: _context14.t0.message
             }));
 
-          case 17:
+          case 16:
           case "end":
             return _context14.stop();
         }
       }
-    }, _callee14, null, [[1, 13]]);
+    }, _callee14, null, [[1, 12]]);
   }));
 
   return function (_x27, _x28) {
@@ -914,75 +1405,104 @@ leadCtrl.conteoLeadsAsignadosByVendedor = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.conteoLeadsAtendidosByVendedor = /*#__PURE__*/function () {
+leadCtrl.leadsByStatusFecha = /*#__PURE__*/function () {
   var _ref15 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee15(req, res) {
-    var _req$body7, sucursal, statusAsignado, statusLead, start, end, filter, query;
+    var _req$body12, estado_lead, start, end, query;
 
     return _regenerator["default"].wrap(function _callee15$(_context15) {
       while (1) {
         switch (_context15.prev = _context15.next) {
           case 0:
-            _req$body7 = req.body, sucursal = _req$body7.sucursal, statusAsignado = _req$body7.statusAsignado, statusLead = _req$body7.statusLead, start = _req$body7.start, end = _req$body7.end;
+            _req$body12 = req.body, estado_lead = _req$body12.estado_lead, start = _req$body12.start, end = _req$body12.end;
             _context15.prev = 1;
-            filter = {
-              sucursal_lead: sucursal,
-              status_asignado: statusAsignado,
-              statusLead: statusLead,
+            _context15.next = 4;
+            return _Lead["default"].find({
+              estado_lead: estado_lead,
               fecha_ingreso: {
                 $gte: new Date(start),
                 $lte: new Date(end)
               }
-            };
-            _context15.next = 5;
-            return _Lead["default"].aggregate([{
-              $match: filter
-            }, {
-              $group: {
-                _id: '$asesorVenta',
-                leads_atendidos: {
-                  $sum: 1
+            }).sort({
+              fecha_ingreso: -1
+            }).populate({
+              path: "sucursal_lead",
+              select: "name"
+            }).populate({
+              path: "dataOrigin",
+              select: "name"
+            }).populate({
+              path: "tipoFinanciamiento",
+              select: "tipo"
+            }).populate({
+              path: "entidad_bancaria",
+              select: "name avatar"
+            }).populate({
+              path: "estado_conversion",
+              select: "name"
+            }).populate({
+              path: "auto",
+              select: "chasis model cod_tdp, version",
+              populate: [{
+                path: "chasis",
+                select: "name"
+              }, {
+                path: "model",
+                select: "name marca avatar",
+                populate: {
+                  path: "marca",
+                  select: "name avatar"
                 }
+              }]
+            }).populate({
+              path: "asesorAsignado",
+              select: "name tipo marca avatar",
+              populate: {
+                path: "marca",
+                select: "name avatar"
               }
-            }]);
+            }).populate({
+              path: "createdBy",
+              select: "name username"
+            });
 
-          case 5:
+          case 4:
             query = _context15.sent;
 
             if (!(query.length > 0)) {
-              _context15.next = 10;
+              _context15.next = 9;
               break;
             }
 
             res.json({
-              nro_vendedores: query.length,
-              tablero: query
+              total: query.length,
+              leads: query
             });
-            _context15.next = 11;
+            _context15.next = 10;
             break;
 
-          case 10:
+          case 9:
             return _context15.abrupt("return", res.status(404).json({
-              message: 'No existe data aún'
+              message: "No existen leads"
             }));
 
-          case 11:
-            _context15.next = 17;
+          case 10:
+            _context15.next = 16;
             break;
 
-          case 13:
-            _context15.prev = 13;
+          case 12:
+            _context15.prev = 12;
             _context15.t0 = _context15["catch"](1);
             console.log(_context15.t0);
             return _context15.abrupt("return", res.status(503).json({
               message: _context15.t0.message
             }));
 
-          case 17:
+          case 16:
           case "end":
             return _context15.stop();
         }
       }
-    }, _callee15, null, [[1, 13]]);
+    }, _callee15, null, [[1, 12]]);
   }));
 
   return function (_x29, _x30) {
@@ -990,52 +1510,76 @@ leadCtrl.conteoLeadsAtendidosByVendedor = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.conteoLeadsbyOrigen = /*#__PURE__*/function () {
+leadCtrl.rankingLeadsConversionByDates = /*#__PURE__*/function () {
   var _ref16 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee16(req, res) {
-    var _req$body8, origen, start, end, query;
+    var _req$body13, start, end, filter, query;
 
     return _regenerator["default"].wrap(function _callee16$(_context16) {
       while (1) {
         switch (_context16.prev = _context16.next) {
           case 0:
-            _req$body8 = req.body, origen = _req$body8.origen, start = _req$body8.start, end = _req$body8.end;
+            _req$body13 = req.body, start = _req$body13.start, end = _req$body13.end;
             _context16.prev = 1;
-            _context16.next = 4;
-            return _Lead["default"].where({
-              dataOrigin: origen,
+            filter = {
               fecha_ingreso: {
                 $gte: new Date(start),
                 $lte: new Date(end)
               }
-            }).find().countDocuments();
+            };
+            _context16.next = 5;
+            return _Lead["default"].aggregate([{
+              $match: filter
+            }, {
+              $group: {
+                _id: "$estado_conversion",
+                num_leads: {
+                  $sum: 1
+                }
+              }
+            }, {
+              $sort: {
+                num_leads: -1
+              }
+            }]);
 
-          case 4:
+          case 5:
             query = _context16.sent;
 
-            if (query.length >= 0) {
-              res.json({
-                data_origen: origen,
-                conteo: query
-              });
+            if (!(query.length > 0)) {
+              _context16.next = 10;
+              break;
             }
 
-            _context16.next = 12;
+            res.json({
+              total: query.length,
+              ranking: query
+            });
+            _context16.next = 11;
             break;
 
-          case 8:
-            _context16.prev = 8;
+          case 10:
+            return _context16.abrupt("return", res.status(201).json({
+              message: "No existen leads aún"
+            }));
+
+          case 11:
+            _context16.next = 17;
+            break;
+
+          case 13:
+            _context16.prev = 13;
             _context16.t0 = _context16["catch"](1);
             console.log(_context16.t0);
             return _context16.abrupt("return", res.status(503).json({
               message: _context16.t0.message
             }));
 
-          case 12:
+          case 17:
           case "end":
             return _context16.stop();
         }
       }
-    }, _callee16, null, [[1, 8]]);
+    }, _callee16, null, [[1, 13]]);
   }));
 
   return function (_x31, _x32) {
@@ -1043,77 +1587,116 @@ leadCtrl.conteoLeadsbyOrigen = /*#__PURE__*/function () {
   };
 }();
 
-leadCtrl.conteoLeadsAtendidosxModelo = /*#__PURE__*/function () {
+leadCtrl.countLeadsByDates = /*#__PURE__*/function () {
   var _ref17 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee17(req, res) {
-    var _req$body9, sucursal, start, end, filtro, query;
+    var _req$body14, estado, start, end, query;
 
     return _regenerator["default"].wrap(function _callee17$(_context17) {
       while (1) {
         switch (_context17.prev = _context17.next) {
           case 0:
-            _req$body9 = req.body, sucursal = _req$body9.sucursal, start = _req$body9.start, end = _req$body9.end;
+            _req$body14 = req.body, estado = _req$body14.estado, start = _req$body14.start, end = _req$body14.end;
             _context17.prev = 1;
-            filtro = {
-              sucursal_lead: sucursal,
+            _context17.next = 4;
+            return _Lead["default"].find({
+              estado_lead: {
+                $regex: '.*' + estado + '.*'
+              },
               fecha_ingreso: {
                 $gte: new Date(start),
                 $lte: new Date(end)
               }
-            };
-            _context17.next = 5;
-            return _Lead["default"].aggregate([{
-              $match: filtro
-            }, {
-              $group: {
-                _id: '$modeloVehiculo',
-                conteo: {
-                  $sum: 1
-                }
-              }
-            }]);
+            }).countDocuments();
 
-          case 5:
+          case 4:
             query = _context17.sent;
 
-            if (!(query.length > 0)) {
-              _context17.next = 10;
-              break;
+            if (query >= 0) {
+              res.json({
+                qty: query
+              });
             }
 
-            res.json({
-              nro_modelos: query.length,
-              tablero: query
-            });
-            _context17.next = 11;
+            _context17.next = 12;
             break;
 
-          case 10:
-            return _context17.abrupt("return", res.status(404).json({
-              message: 'No existe data aún'
-            }));
-
-          case 11:
-            _context17.next = 17;
-            break;
-
-          case 13:
-            _context17.prev = 13;
+          case 8:
+            _context17.prev = 8;
             _context17.t0 = _context17["catch"](1);
             console.log(_context17.t0);
             return _context17.abrupt("return", res.status(503).json({
               message: _context17.t0.message
             }));
 
-          case 17:
+          case 12:
           case "end":
             return _context17.stop();
         }
       }
-    }, _callee17, null, [[1, 13]]);
+    }, _callee17, null, [[1, 8]]);
   }));
 
   return function (_x33, _x34) {
     return _ref17.apply(this, arguments);
+  };
+}();
+
+leadCtrl.countLeadsConversionyDates = /*#__PURE__*/function () {
+  var _ref18 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee18(req, res) {
+    var _req$body15, estado, start, end, conversionState, query;
+
+    return _regenerator["default"].wrap(function _callee18$(_context18) {
+      while (1) {
+        switch (_context18.prev = _context18.next) {
+          case 0:
+            _req$body15 = req.body, estado = _req$body15.estado, start = _req$body15.start, end = _req$body15.end;
+            _context18.prev = 1;
+            _context18.next = 4;
+            return _EstadoConversion["default"].findOne({
+              name: estado
+            });
+
+          case 4:
+            conversionState = _context18.sent;
+            _context18.next = 7;
+            return _Lead["default"].find({
+              estado_conversion: conversionState._id,
+              fecha_ingreso: {
+                $gte: new Date(start),
+                $lte: new Date(end)
+              }
+            }).countDocuments();
+
+          case 7:
+            query = _context18.sent;
+
+            if (query >= 0) {
+              res.json({
+                qty: query
+              });
+            }
+
+            _context18.next = 15;
+            break;
+
+          case 11:
+            _context18.prev = 11;
+            _context18.t0 = _context18["catch"](1);
+            console.log(_context18.t0);
+            return _context18.abrupt("return", res.status(503).json({
+              message: _context18.t0.message
+            }));
+
+          case 15:
+          case "end":
+            return _context18.stop();
+        }
+      }
+    }, _callee18, null, [[1, 11]]);
+  }));
+
+  return function (_x35, _x36) {
+    return _ref18.apply(this, arguments);
   };
 }();
 

@@ -14,20 +14,32 @@ var sellerSchema = new _mongoose.Schema({
   document: {
     type: String
   },
+  cellphone: {
+    type: String
+  },
+  email: {
+    type: String
+  },
+  tipo: {
+    type: String
+  },
+  marca: {
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'Marca'
+  },
   sucursal: {
-    type: String
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'Sucursal'
   },
-  rutaPerfil: {
-    type: String
-  },
-  titlePerfil: {
-    type: String
+  avatar: {
+    type: String,
+    "default": 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg'
   },
   status: {
     type: Boolean,
     "default": true
   },
-  userCreator: {
+  createdBy: {
     ref: 'User',
     type: _mongoose.Schema.Types.ObjectId
   }

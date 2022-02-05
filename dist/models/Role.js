@@ -15,9 +15,10 @@ var roleSchema = new _mongoose.Schema({
     type: String
   },
   status: {
-    type: Boolean
+    type: Boolean,
+    "default": true
   },
-  userCreator: {
+  createdBy: {
     ref: 'User',
     type: _mongoose.Schema.Types.ObjectId
   }

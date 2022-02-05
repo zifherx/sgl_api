@@ -5,56 +5,96 @@ const roleCtrl = {}
 
 roleCtrl.getAll = async(req, res) => {
     try {
-        const query = await Role.find().sort({ name: 'asc' }).populate('userCreator')
+        const query = await Role.find()
+        .sort({ name: 1 })
+        .populate({
+            path: 'createdBy',
+            select: 'name username roles',
+            populate: {
+                path: 'roles',
+                select: 'name'
+            }
+        });
 
         if (query.length > 0) {
-            res.json(query)
+            res.json({count: query.length, all_roles: query});
         } else {
             return res.status(404).json({ message: 'No existen Roles' })
         }
 
     } catch (err) {
-        console.error(err)
-        return res.status(503).json({ message: err.message })
+        console.log(err)
+        return res.status(503).json({ error: err.message })
     }
 }
 
-roleCtrl.getOne = async(req, res) => {
+roleCtrl.getOneById = async(req, res) => {
     const { roleId } = req.params;
     try {
-        const query = await Role.findById(roleId).sort({ name: 'asc' })
+        const query = await Role.findById(roleId)
+        .populate({
+            path: 'createdBy',
+            select: 'name username roles',
+            populate: {
+                path: 'roles',
+                select: 'name'
+            }
+        });
         if (query) {
             res.json(query);
         } else {
             return res.status(404).json({ message: 'No existe el Rol' })
         }
     } catch (err) {
-        console.error(err);
-        return res.status(503).json({ message: err.message });
+        console.log(err);
+        return res.status(503).json({ error: err.message });
     }
 }
 
-roleCtrl.getCount = async(req, res) => {
+roleCtrl.getAllByStatus = async (req, res) => {
     try {
-        const query = await Role.estimatedDocumentCount()
-            // console.log(query)
+        const query = await Role.find({status: true})
+        .sort({name: 1})
+        .populate({
+            path: 'createdBy',
+            select: 'name username roles',
+            populate: {
+                path: 'roles',
+                select: 'name'
+            }
+        });
+
+        if(query.length > 0){
+            res.json({count: query.length, roles_activos: query});
+        }else{
+            return res.status(404).json({message: 'No hay roles activos'});
+        }
+    } catch (err) {
+        console.log(err)
+        return res.status(503).json({ error: err.message });
+    }
+}
+
+roleCtrl.countAll = async(req, res) => {
+    try {
+        const query = await Role.countDocuments()
         if (query >= 0) {
             res.json({ nro_roles: query })
         }
     } catch (err) {
-        console.error(err)
-        return res.status(503).json({ message: err.message })
+        console.log(err)
+        return res.status(503).json({ error: err.message });
     }
 }
 
 roleCtrl.createRole = async(req, res) => {
-    const { name, description, status, userCreator } = req.body;
+    const { name, description, status, createdBy } = req.body;
     try {
 
         const newRole = new Role({ name, description, status });
 
-        const userFound = await User.find({ username: userCreator })
-        newRole.userCreator = userFound.map(a => a._id)
+        const userFound = await User.findOne({ username: createdBy })
+        newRole.createdBy = userFound._id;
 
         const query = await newRole.save();
 
@@ -62,12 +102,12 @@ roleCtrl.createRole = async(req, res) => {
             res.json({ message: 'Rol creado con éxito' });
         }
     } catch (err) {
-        console.error(err);
-        return res.status(503).json({ message: err.message });
+        console.log(err);
+        return res.status(503).json({ error: err.message });
     }
 }
 
-roleCtrl.updateRole = async(req, res) => {
+roleCtrl.updateRoleById = async(req, res) => {
     const { roleId } = req.params;
     const { name, description, status } = req.body;
     try {
@@ -84,11 +124,11 @@ roleCtrl.updateRole = async(req, res) => {
         }
     } catch (err) {
         console.log(err);
-        return res.status(500).json({ message: err.message });
+        return res.status(503).json({ error: err.message });
     }
 }
 
-roleCtrl.deleteRole = async(req, res) => {
+roleCtrl.deleteRoleById = async(req, res) => {
     const { roleId } = req.params;
     try {
         const query = await Role.findByIdAndDelete(roleId);
@@ -99,7 +139,7 @@ roleCtrl.deleteRole = async(req, res) => {
         }
     } catch (err) {
         console.log(err);
-        return res.status(500).json({ message: err.message });
+        return res.status(503).json({ error: err.message });
     }
 }
 

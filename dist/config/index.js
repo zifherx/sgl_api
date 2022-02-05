@@ -5,8 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-require("dotenv/config");
+var _dotenv = require("dotenv");
 
+(0, _dotenv.config)();
 var _default = {
   SECRET: 'API_SGL_AUTONORT',
   // mongoURL: process.env.MONGO_URI_LOCAL

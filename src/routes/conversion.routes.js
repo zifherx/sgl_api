@@ -1,25 +1,14 @@
-import { Router } from 'express'
-import * as conversionCtrl from '../controllers/conversion.controller'
-import { authJwt, verifyDuplicate } from '../middlewares'
+import {Router} from 'express';
+import conversionController from '../controllers/conversion.controller';
+import { authJwt, verifyDuplicate} from '../middlewares';
 
-const router = Router();
+const router = new Router();
 
-//Obtener Conversion
-router.get('/', conversionCtrl.getAll);
-
-//Obtener Conversion Activos
-router.get('/activos', conversionCtrl.getConversionByActivo);
-
-//Obtener Conversion por ID
-router.get('/:conversionId', conversionCtrl.getConversionById);
-
-//Crear Conversion
-router.post('/', [authJwt.verifyToken, authJwt.isAdmin, verifyDuplicate.checkDuplicateConversion], conversionCtrl.createConversion);
-
-//Actualizar Conversion
-router.patch('/:conversionId', [authJwt.verifyToken, authJwt.isAdmin], conversionCtrl.updateConversion);
-
-//Eliminar Conversion
-router.delete('/:conversionId', [authJwt.verifyToken, authJwt.isAdmin], conversionCtrl.deleteConversion);
+router.get('/', conversionController.getAll);
+router.get('/activos', conversionController.getActivos);
+router.get('/:conversionId', conversionController.getOneById);
+router.post('/', [authJwt.verifyToken, authJwt.isAdmin, verifyDuplicate.checkDuplicateConversion] ,conversionController.createOne);
+router.patch('/:conversionId', [authJwt.verifyToken, authJwt.isAdmin] , conversionController.updateOneById);
+router.delete('/:conversionId', [authJwt.verifyToken, authJwt.isAdmin] , conversionController.deleteOneById);
 
 export default router;

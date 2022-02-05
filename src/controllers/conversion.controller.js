@@ -1,89 +1,120 @@
-import Conversion from '../models/Conversion'
+import EstadoConversion from "../models/EstadoConversion";
+import User from "../models/User";
 
-export const getAll = async(req, res) => {
+const conversionCtrl = {};
+
+conversionCtrl.getAll = async (req, res) => {
     try {
-        const objeto = await Conversion.find().sort({ name: 'asc' })
-        if (objeto.length > 0) {
-            res.json(objeto);
-        } else {
-            return res.status(404).json({ message: 'No existen estados de conversión' })
+        const query = await EstadoConversion.find()
+        .populate({
+            path: 'createdBy',
+            select: 'name username',
+        });
+
+        if(query.length > 0) {
+            res.json({total: query.length, all_status: query});
+        }else{
+            return res.status(404).json({message: 'No existen estados'});
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({message: err.message})
     }
-}
+};
 
-export const getConversionById = async(req, res) => {
-    const { conversionId } = req.params
+conversionCtrl. getActivos = async (req, res) => {
     try {
-        const objeto = await Conversion.findById(conversionId)
-        if (objeto) {
-            res.json(objeto);
-        } else {
-            return res.status(404).json({ message: 'No existe estado de conversión' })
+        const query = await EstadoConversion.find({status: true})
+        .populate({
+            path: 'createdBy',
+            select: 'name username',
+        });
+
+        if(query.length > 0) {
+            res.json({total_active: query.length, active_status: query});
+        }else{
+            return res.status(404).json({message: 'No existen estados activos'});
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({message: err.message})
     }
-}
+    
+};
 
-export const getConversionByActivo = async(req, res) => {
+conversionCtrl.getOneById = async (req, res) => {
+    const {conversionId} = req.params;
     try {
-        const objeto = await Conversion.find({ status: true }).sort({ name: 'asc' })
-        if (objeto.length > 0) {
-            res.json(objeto);
-        } else {
-            return res.status(404).json({ message: 'No existen estados de conversión Activos' })
+        const query = await EstadoConversion.findById(conversionId)
+        .populate({
+            path: 'createdBy',
+            select: 'name username',
+        });
+
+        if(query){
+            res.json({status: query});
+        }else{
+            return res.status(404).json({ message: 'No se encontró el estado'});
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({message: err.message})
     }
-}
+};
 
-export const createConversion = async(req, res) => {
-    const { name, status } = req.body;
+conversionCtrl.createOne = async (req, res) => {
+    const {name, value,  status, createdBy} = req.body;
     try {
-        const nuevo = new Conversion({ name, status })
-        const objeto = await nuevo.save()
-        if (objeto) {
-            res.json({ message: 'Estado de conversión creada con éxito' })
+        
+        const userFound = await User.findOne({username: createdBy});
+        if(!userFound) return res.status(404).json({message: `Colaborador ${createdBy} no encontrado`})
+
+        const newObj = new EstadoConversion({name,value, status});
+        newObj.createdBy = userFound._id;
+
+        const query = await newObj.save();
+
+        if(query){
+            res.json({message: 'Estado creado con éxito'});
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({message: err.message})
     }
-}
+    
+};
 
-export const updateConversion = async(req, res) => {
-    const { name, status } = req.body;
-    const { conversionId } = req.params;
+conversionCtrl.updateOneById = async (req, res) => {
+    const {conversionId} = req.params;
+    const {name,value, status} = req.body;
     try {
-        const objeto = await Conversion.findByIdAndUpdate(conversionId, { name, status })
-        if (objeto) {
-            res.json({ message: 'Estado de conversion actualizada con éxito' })
-        } else {
-            res.status(404).json({ message: 'No existe estado de conversión a actualizar' })
+        const query = await EstadoConversion.findByIdAndUpdate(conversionId,{ name,value, status});
+        
+        if(query){
+            res.json({message: 'Estado actualizado con éxito'});
+        }else{
+            return res.status(404).json({message: 'No se encontró el estado a actualizar'})
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({message: err.message})
     }
-}
+};
 
-export const deleteConversion = async(req, res) => {
-    const { conversionId } = req.params;
+conversionCtrl.deleteOneById = async (req, res) => {
+    const {conversionId} = req.params;
     try {
-        const objeto = await Conversion.findByIdAndDelete(conversionId)
-        if (objeto) {
-            res.json({ message: 'Estado de conversión eliminada con éxito' })
-        } else {
-            return res.status(404).json({ message: 'No existe estado de conversión a eliminar' })
+        const query = await EstadoConversion.findByIdAndDelete(conversionId);
+
+        if(query){
+            res.json({message: 'Estado eliminado con éxito'});
+        }else{
+            return res.status(404).json({message: 'No se encontró el estado a eliminar'})
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({message: err.message})
     }
-}
+};
+
+export default conversionCtrl;

@@ -8,7 +8,7 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 
 var _app = _interopRequireDefault(require("./app"));
 
-var _database = require("./config/database");
+var _database = _interopRequireDefault(require("./config/database"));
 
 function main() {
   return _main.apply(this, arguments);
@@ -20,14 +20,15 @@ function _main() {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            (0, _database.startConecction)();
-            _context.next = 3;
+            _context.next = 2;
             return _app["default"].listen(_app["default"].get('port'));
 
-          case 3:
-            console.log('Servidor en el puerto', _app["default"].get('port'));
+          case 2:
+            console.log('Server on port', _app["default"].get('port'));
+            _context.next = 5;
+            return (0, _database["default"])();
 
-          case 4:
+          case 5:
           case "end":
             return _context.stop();
         }

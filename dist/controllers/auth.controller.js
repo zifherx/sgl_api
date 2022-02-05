@@ -56,7 +56,7 @@ authCtrl.iniciarSesion = /*#__PURE__*/function () {
             }));
 
           case 8:
-            if (!(userFound.online === 1)) {
+            if (!userFound.online) {
               _context.next = 10;
               break;
             }
@@ -86,12 +86,12 @@ authCtrl.iniciarSesion = /*#__PURE__*/function () {
             token = _jsonwebtoken["default"].sign({
               id: userFound._id
             }, _config["default"].SECRET, {
-              expiresIn: '24h'
+              expiresIn: '48h'
             }); //Cambio de estado a online
 
             _context.next = 18;
             return _User["default"].findByIdAndUpdate(userFound._id, {
-              online: 1
+              online: true
             });
 
           case 18:
@@ -99,7 +99,7 @@ authCtrl.iniciarSesion = /*#__PURE__*/function () {
             console.log('Token:', token);
             res.json({
               token: token,
-              codigoUser: userFound._id
+              userCod: userFound._id
             });
 
           case 21:
@@ -163,51 +163,43 @@ authCtrl.cambiarContrasena = /*#__PURE__*/function () {
               break;
             }
 
-            return _context2.abrupt("return", res.status(409).json({
+            return _context2.abrupt("return", res.status(401).json({
               token: null,
               message: 'Contraseña Errónea'
             }));
 
           case 14:
-            _context2.next = 16;
+            _context2.prev = 14;
+            _context2.next = 17;
             return _User["default"].encryptPassword(newPassword);
 
-          case 16:
+          case 17:
             userFound.password = _context2.sent;
-            _context2.next = 19;
+            _context2.next = 20;
             return userFound.save();
 
-          case 19:
+          case 20:
             newObj = _context2.sent;
-            _context2.prev = 20;
-
-            if (!newObj) {
-              _context2.next = 23;
-              break;
-            }
-
-            return _context2.abrupt("return", res.json({
+            if (newObj) res.json({
               message: 'Contraseña actualizada con éxito'
-            }));
-
-          case 23:
-            _context2.next = 29;
+            });
+            _context2.next = 28;
             break;
 
-          case 25:
-            _context2.prev = 25;
-            _context2.t0 = _context2["catch"](20);
+          case 24:
+            _context2.prev = 24;
+            _context2.t0 = _context2["catch"](14);
             console.log(_context2.t0);
             return _context2.abrupt("return", res.status(503).json({
-              message: _context2.t0.message
+              error: _context2.t0.message
             }));
 
-          case 29:
+          case 28:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[20, 25]]);
+    }, _callee2, null, [[14, 24]]);
   }));
 
   return function (_x3, _x4) {
@@ -230,7 +222,7 @@ authCtrl.cerrarSesion = /*#__PURE__*/function () {
           case 4:
             userFound = _context3.sent;
 
-            if (!(userFound.online === 0)) {
+            if (userFound.online) {
               _context3.next = 7;
               break;
             }
@@ -242,7 +234,7 @@ authCtrl.cerrarSesion = /*#__PURE__*/function () {
           case 7:
             _context3.next = 9;
             return _User["default"].findByIdAndUpdate(id, {
-              online: 0
+              online: false
             });
 
           case 9:
@@ -265,7 +257,7 @@ authCtrl.cerrarSesion = /*#__PURE__*/function () {
             _context3.prev = 14;
             _context3.t0 = _context3["catch"](1);
             return _context3.abrupt("return", res.status(503).json({
-              message: _context3.t0.message
+              error: _context3.t0
             }));
 
           case 17:
@@ -297,12 +289,10 @@ authCtrl.forzarCierreSesion = /*#__PURE__*/function () {
 
           case 4:
             userFound = _context4.sent;
-            // console.log(userFound)
             idUser = userFound._id;
-            console.log(idUser);
 
             if (userFound) {
-              _context4.next = 9;
+              _context4.next = 8;
               break;
             }
 
@@ -310,27 +300,27 @@ authCtrl.forzarCierreSesion = /*#__PURE__*/function () {
               message: 'Usuario no existe'
             }));
 
-          case 9:
-            if (!(userFound.online === 0)) {
-              _context4.next = 11;
+          case 8:
+            if (userFound.online) {
+              _context4.next = 10;
               break;
             }
 
-            return _context4.abrupt("return", res.status(401).json({
+            return _context4.abrupt("return", res.status(400).json({
               message: 'No existe sesión iniciada'
             }));
 
-          case 11:
-            _context4.next = 13;
+          case 10:
+            _context4.next = 12;
             return _User["default"].findByIdAndUpdate(idUser, {
-              online: 0
+              online: false
             });
 
-          case 13:
+          case 12:
             offline = _context4.sent;
 
             if (!offline) {
-              _context4.next = 16;
+              _context4.next = 15;
               break;
             }
 
@@ -338,15 +328,16 @@ authCtrl.forzarCierreSesion = /*#__PURE__*/function () {
               message: 'Se forzó el cierre de sesión'
             }));
 
-          case 16:
+          case 15:
             _context4.next = 21;
             break;
 
-          case 18:
-            _context4.prev = 18;
+          case 17:
+            _context4.prev = 17;
             _context4.t0 = _context4["catch"](1);
+            console.log(_context4.t0);
             return _context4.abrupt("return", res.status(503).json({
-              message: _context4.t0.message
+              error: _context4.t0
             }));
 
           case 21:
@@ -354,7 +345,7 @@ authCtrl.forzarCierreSesion = /*#__PURE__*/function () {
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[1, 18]]);
+    }, _callee4, null, [[1, 17]]);
   }));
 
   return function (_x7, _x8) {

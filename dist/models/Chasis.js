@@ -12,7 +12,12 @@ var chasisSchema = new _mongoose.Schema({
     type: String
   },
   status: {
-    type: Boolean
+    type: Boolean,
+    "default": true
+  },
+  createdBy: {
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }
 }, {
   versionKey: false,

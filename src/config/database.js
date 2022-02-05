@@ -1,12 +1,18 @@
 import { connect } from 'mongoose'
 import index from './index'
 
-export async function startConecction() {
-    const db = await connect(index.mongoURL, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        useFindAndModify: false,
-        useCreateIndex: true
-    })
-    console.log(`Database ${db.connection.name} is connected`)
+const initializeDB = async () => {
+    try {
+        let con = await connect(index.mongoURL,{
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+        let dbName = con.connection.name;
+        let dbPort = con.connection.port;
+        console.log('DB', dbName, 'is connected on port', Number(dbPort));
+    } catch (err) {
+        console.log(err);
+    }
 }
+
+export default initializeDB;

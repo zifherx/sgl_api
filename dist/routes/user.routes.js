@@ -17,12 +17,13 @@ var _multer = _interopRequireDefault(require("../middlewares/multer"));
 
 var router = (0, _express.Router)();
 router.get('/', _user["default"].getAll);
+router.get('/activos', _user["default"].getAllByStatus);
 router.get('/count', _user["default"].getCountAll);
-router.get('/:userId', _user["default"].getOne);
+router.get('/:userId', _user["default"].getOneById);
 router.post('/', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAdmin, _middlewares.verifyDuplicate.checkUserDuplicate], _user["default"].createUser);
-router.post('/count-status', _user["default"].getCountByStatus);
-router.post('/count-online', _user["default"].getCountByOnline);
-router.patch('/update-profile', _multer["default"].single('image'), [_middlewares.authJwt.verifyToken], _user["default"].updateProfile);
+router.post('/count/online', _user["default"].getCountByOnline);
+router.patch('/profile/:userId', [_middlewares.authJwt.verifyToken], _multer["default"].single('avatar'), _user["default"].updateProfile);
+router.patch('/upload/:userId', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAdmin], _multer["default"].single('avatar'), _user["default"].uploadPhoto);
 router.patch('/:userId', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAdmin], _user["default"].updateUser);
 router["delete"]('/:userId', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAdmin], _user["default"].deleteUser);
 var _default = router;

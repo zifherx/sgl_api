@@ -1,142 +1,265 @@
-import Vehicle from '../models/Vehicle'
-import User from '../models/User'
+import Vehicle from '../models/Vehicle';
+import User from '../models/User';
+import Chasis from '../models/Chasis';
+import Modelo from '../models/Modelo';
 
 const vehicleCtrl = {}
 
 vehicleCtrl.createVehicle = async(req, res) => {
-    const { marca, cod_tdp, categoria, modelo, version, userCreator } = req.body;
+    const { cod_tdp, chasis, model, version, createdBy } = req.body;
 
     try {
-        const newVehicle = new Vehicle({ marca, cod_tdp, categoria, modelo, version });
+        const foundChasis = await Chasis.findOne({name: chasis});
+        const foundModelo = await Modelo.findOne({name: model});
+        const foundEmployee = await User.findOne({ username: createdBy });
 
-        const foundEmployee = await User.find({ username: { $in: userCreator } });
-        newVehicle.userCreator = foundEmployee.map(em => em._id);
+        if(!foundChasis) return res.status(404).json({message: `Chasis ${chasis} no encontrado`});
+        if(!foundModelo) return res.status(404).json({message: `Modelo ${model} no encontrado`});
+        if(!foundEmployee) return res.status(404).json({message: `Colaborador ${createdBy} no encontrado`});
+        
+        const newVehicle = new Vehicle({ cod_tdp, version });
 
-        const vehicleSaved = await newVehicle.save();
+        newVehicle.chasis = foundChasis._id;
+        newVehicle.model = foundModelo._id;
+        newVehicle.createdBy = foundEmployee._id;
 
-        if (vehicleSaved) {
+        const query = await newVehicle.save();
+
+        if (query) {
             res.json({ message: 'Vehículo creado con éxito' });
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({ message: err.message });
     }
 
 }
 
 vehicleCtrl.getVehicles = async(req, res) => {
     try {
-        const vehicles = await Vehicle.find().sort({ cod_tdp: 'asc' });
+        const query = await Vehicle.find()
+            .select('chasis model cod_tdp version createdBy')
+            .sort({ cod_tdp: 'asc' })
+            .populate({
+                path: 'chasis',
+                select: 'name'
+            })
+            .populate({
+                path: 'model',
+                select: 'name marca avatar',
+                populate:{
+                    path: 'marca',
+                    select: 'name avatar'
+                }
+            })
+            .populate({
+                path: 'createdBy',
+                select: 'name username',
+            });
 
-        if (vehicles.length > 0) {
-            res.json(vehicles);
+        if (query.length > 0) {
+            res.json({total: query.length, all_vehicles: query});
         } else {
             return res.status(404).json({ message: 'No existen vehículos' });
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({ message: err.message });
     }
 }
 
 vehicleCtrl.getVehicleById = async(req, res) => {
     const { vehicleId } = req.params;
     try {
-        const vehicle = await Vehicle.findById(vehicleId);
-        if (vehicle) {
-            res.json(vehicle);
+        const query = await Vehicle.findById(vehicleId)
+        .select('chasis model cod_tdp version createdBy')
+        .populate({
+            path: 'chasis',
+            select: 'name'
+        })
+        .populate({
+            path: 'model',
+            select: 'name marca avatar',
+            populate:{
+                path: 'marca',
+                select: 'name avatar'
+            }
+        })
+        .populate({
+            path: 'createdBy',
+            select: 'name username',
+        });
+        if (query) {
+            res.json({vehicle: query});
         } else {
             return res.status(404).json({ message: 'No existe el Vehículo' });
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({ message: err.message })
     }
 }
 
 vehicleCtrl.getVehicleByCodigo = async(req, res) => {
-    const { codigoAuto } = req.body;
+    const { cod_tdp } = req.body;
     try {
-        const query = await Vehicle.findOne({ cod_tdp: codigoAuto });
+        const query = await Vehicle.findOne({ cod_tdp })
+        .select('chasis model cod_tdp version createdBy')
+        .populate({
+            path: 'chasis',
+            select: 'name'
+        })
+        .populate({
+            path: 'model',
+            select: 'name marca avatar',
+            populate:{
+                path: 'marca',
+                select: 'name avatar'
+            }
+        })
+        .populate({
+            path: 'createdBy',
+            select: 'name username',
+        });
+
         if (query) {
-            res.json(query);
+            res.json({vehicle: query});
         } else {
             return res.status(404).json({ message: 'No existe vehículo a mostrar' });
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({ message: err.message })
     }
 }
 
 vehicleCtrl.getVehiculeByMarca = async(req, res) => {
     const { marca } = req.body;
     try {
-        const query = await Vehicle.find({ marca });
-        if (query.length > 0) {
-            res.json(query);
+        const query = await Vehicle.find()
+        .select('chasis model cod_tdp version createdBy')
+        .sort({ cod_tdp: 'asc' })
+        .populate({
+            path: 'chasis',
+            select: 'name'
+        })
+        .populate({
+            path: 'model',
+            select: 'name marca avatar',
+            populate:{
+                path: 'marca',
+                select: 'name avatar',
+                match: { name: marca }
+            }
+        })
+        .populate({
+            path: 'createdBy',
+            select: 'name username',
+        });
+
+        const obj = query.filter(a => a.model.marca);
+        
+        if (obj.length > 0) {
+            res.json({total: obj.length, vehicles: obj});
         } else {
             return res.status(404).json({ message: 'No existen Vehículos en esa Marca' })
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({ message: err.message })
     }
 }
 
 vehicleCtrl.getVehiculeByModelo = async(req, res) => {
     const { modelo } = req.body;
+
     try {
-        const query = await Vehicle.find({ modelo });
-        if (query.length > 0) {
-            res.json(query);
+        const query = await Vehicle.find()
+        .select('chasis model cod_tdp version createdBy')
+        .sort({ cod_tdp: 'asc' })
+        .populate({
+            path: 'chasis',
+            select: 'name'
+        })
+        .populate({
+            path: 'model',
+            select: 'name marca avatar',
+            match: { name: modelo },
+            populate:{
+                path: 'marca',
+                select: 'name avatar'
+            }
+        })
+        .populate({
+            path: 'createdBy',
+            select: 'name username',
+        });
+
+        // console.log(query);
+
+        const obj = query.filter(a => a.model);
+        // console.log(obj);
+
+        if (obj.length > 0) {
+            res.json({total: obj.length, vehicles: obj});
         } else {
             return res.status(404).json({ message: 'No existen Vehículos en ese Modelo' })
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({ message: err.message })
     }
 }
 
 vehicleCtrl.updateVehicleById = async(req, res) => {
     const { vehicleId } = req.params;
-    const { marca, cod_tdp, categoria, modelo, version } = req.body;
+    const { chasis, model, cod_tdp, version } = req.body;
 
     try {
-        const updatedVehicle = await Vehicle.findByIdAndUpdate(vehicleId, { marca, cod_tdp, categoria, modelo, version });
-        if (updatedVehicle) {
+        const chasisFound = await Chasis.findOne({name: chasis});
+        const modelFound = await Modelo.findOne({name: model});
+
+        if(!chasisFound) return res.status(404).json({message: `No existe chasis ${chasis}`});
+        if(!modelFound) return res.status(404).json({message: `No existe modelo ${model}`});
+
+        const query = await Vehicle.findByIdAndUpdate(vehicleId, { 
+            chasis: chasisFound._id,
+            model: modelFound._id,
+            cod_tdp,
+            version
+        });
+        if (query) {
             res.json({ message: 'Vehículo actualizado con éxito' });
         } else {
             return res.status(404).json({ message: 'No existe Vehículo a actualizar' })
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({ message: err.message })
     }
 }
 
 vehicleCtrl.deleteVehicleById = async(req, res) => {
     const { vehicleId } = req.params;
     try {
-        const deletedVehicle = await Vehicle.findByIdAndDelete(vehicleId);
-        if (deletedVehicle) {
+        const query = await Vehicle.findByIdAndDelete(vehicleId);
+        if (query) {
             res.json({ message: 'Vehículo eliminado con éxito' });
         } else {
             return res.status(404).json({ message: 'No existe Vehículo a eliminar' })
         }
     } catch (err) {
         console.log(err);
-        res.status(503).json({ message: err.message })
+        return res.status(503).json({ message: err.message })
     }
 }
 
 vehicleCtrl.getCountAll = async(req, res) => {
     try {
-        const query = await Customer.estimatedDocumentCount()
+        const query = await Vehicle.countDocuments();
 
         if (query >= 0) {
-            res.json({ nro_customer: query })
+            res.json({ total_vehicles: query }); 
         }
     } catch (err) {
         console.error(err)

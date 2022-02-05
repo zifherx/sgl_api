@@ -8,25 +8,53 @@ exports["default"] = void 0;
 var _mongoose = require("mongoose");
 
 var leadSchema = new _mongoose.Schema({
+  //Solicitud Lead
   sucursal_lead: {
-    type: String
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'Sucursal'
   },
   dataOrigin: {
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'OriginData'
+  },
+  motivo_rechazo: {
+    type: String
+  },
+  motivo_desistencia: {
+    type: String
+  },
+  comentario: {
+    type: String
+  },
+  observacion: {
+    type: String
+  },
+  // Financiamiento
+  tipoFinanciamiento: {
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'Financiamiento'
+  },
+  entidad_bancaria: {
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'Banco',
+    "default": null
+  },
+  tentativa_inicial: {
     type: Number,
     "default": 0
   },
-  statusLead: {
-    type: Boolean,
-    "default": false
+  precioUnidad: {
+    type: Number,
+    "default": 0
   },
+  //Cliente
   customer_name: {
     type: String
   },
   customer_document: {
-    type: String
-  },
-  customer_address: {
-    type: String
+    type: String,
+    min: 8,
+    max: 11
   },
   customer_city: {
     type: String
@@ -34,71 +62,110 @@ var leadSchema = new _mongoose.Schema({
   customer_cellphone: {
     type: String
   },
+  customer_cellphone2: {
+    type: String
+  },
   customer_email: {
     type: String
   },
-  // customer: { ref: 'Customer', type: Schema.Types.ObjectId },
-  //JEFE
-  status_asignado: {
+  // Estatus
+  estado_lead: {
+    type: String,
+    "default": 'INGRESADO'
+  },
+  estado_conversion: {
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'EstadoConversion',
+    "default": null
+  },
+  //Verificaciones de Leads
+  isIngresado: {
+    type: Boolean,
+    "default": true
+  },
+  isNoInteresado: {
     type: Boolean,
     "default": false
   },
-  fecha_asignacion: {
+  isAtendido: {
+    type: Boolean,
+    "default": false
+  },
+  isAsignado: {
+    type: Boolean,
+    "default": false
+  },
+  isCotizado: {
+    type: Boolean,
+    "default": false
+  },
+  isDeclinado: {
+    type: Boolean,
+    "default": false
+  },
+  isConvertido: {
+    type: Boolean,
+    "default": false
+  },
+  isBooking: {
+    type: Boolean,
+    "default": false
+  },
+  isDown: {
+    type: Boolean,
+    "default": false
+  },
+  isVenta: {
+    type: Boolean,
+    "default": false
+  },
+  //Fechas
+  fecha_ingreso: {
     type: Date
   },
-  //Cotizacion
-  modeloVehiculo: {
-    type: String
-  },
-  versionVehiculo: {
-    type: String
-  },
-  asesorVenta: {
-    ref: 'Seller',
-    type: _mongoose.Schema.Types.ObjectId,
-    "default": null
-  },
-  fecha_ingreso: {
+  fecha_noInteresado: {
     type: Date
   },
   fecha_atencion: {
     type: Date
   },
-  comentario: {
-    type: String
+  fecha_asignacion: {
+    type: Date
   },
-  tipo_pago: {
-    type: String
+  fecha_cotizacion: {
+    type: Date
   },
-  valorUnidad: {
-    type: Number
+  fecha_declinado: {
+    type: Date
   },
-  tipo_financiamiento: {
-    type: String
+  fecha_conversion: {
+    type: Date
   },
-  //Creador
-  userCreator: {
+  fecha_booking: {
+    type: Date
+  },
+  fecha_down: {
+    type: Date
+  },
+  fecha_venta: {
+    type: Date
+  },
+  //Vehiculo
+  auto: {
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'Vehicle',
+    "default": null
+  },
+  //Asesor Asignado
+  asesorAsignado: {
+    ref: 'Seller',
+    type: _mongoose.Schema.Types.ObjectId,
+    "default": null
+  },
+  //Creador Lead
+  createdBy: {
     ref: 'User',
     type: _mongoose.Schema.Types.ObjectId
-  },
-  jefeAsignador: {
-    ref: 'User',
-    type: _mongoose.Schema.Types.ObjectId,
-    "default": null
-  },
-  asesorAtencion: {
-    ref: 'User',
-    type: _mongoose.Schema.Types.ObjectId,
-    "default": null
-  },
-  //Estado Global Venta
-  lead_convertido: {
-    type: Boolean,
-    "default": false
-  },
-  estatus_venta: {
-    type: String,
-    "default": 'EN SEGUIMIENTO'
   }
 }, {
   timestamps: true,

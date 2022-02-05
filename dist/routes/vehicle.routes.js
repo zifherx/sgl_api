@@ -15,17 +15,19 @@ var _middlewares = require("../middlewares");
 
 var router = (0, _express.Router)(); //Obtener Vehiculos
 
-router.get('/', _vehicle["default"].getVehicles); //Obtener Vehiculo por ID
+router.get('/', _vehicle["default"].getVehicles); //Obtener Total Vehiculos
+
+router.get('/count', _vehicle["default"].getCountAll); //Obtener Vehiculo por ID
 
 router.get('/:vehicleId', _vehicle["default"].getVehicleById); //Obtener Vehiculo por Marca
 
-router.post('/marca', [_middlewares.authJwt.verifyToken], _vehicle["default"].getVehiculeByMarca); //Obtener Vehiculo por Modelo
+router.post('/by-marca', _vehicle["default"].getVehiculeByMarca); //Obtener Vehiculo por Modelo
 
-router.post('/modelo', [_middlewares.authJwt.verifyToken], _vehicle["default"].getVehiculeByModelo); //Crear Vehiculo
+router.post('/by-modelo', _vehicle["default"].getVehiculeByModelo); //Obtener Vehiculo por COD-TDP
 
-router.post('/', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAdmin, _middlewares.verifyDuplicate.checkDuplicateVehiculo], _vehicle["default"].createVehicle); //Obtener Vehiculo por COD-TDP
+router.post('/find', _vehicle["default"].getVehicleByCodigo); //Crear Vehiculo
 
-router.post('/find', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAdmin], _vehicle["default"].getVehicleByCodigo); //Actualizar Vehiculo
+router.post('/', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAdmin, _middlewares.verifyDuplicate.checkDuplicateVehiculo], _vehicle["default"].createVehicle); //Actualizar Vehiculo
 
 router.patch('/:vehicleId', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAdmin], _vehicle["default"].updateVehicleById); //Eliminar Vehiculo
 

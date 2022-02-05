@@ -9,17 +9,38 @@ exports["default"] = void 0;
 
 var _multer = _interopRequireDefault(require("multer"));
 
-var _uuid = require("uuid");
+var _s = _interopRequireDefault(require("aws-sdk/clients/s3"));
 
 var _path = _interopRequireDefault(require("path"));
 
-var storage = _multer["default"].diskStorage({
-  destination: 'uploads',
-  filename: function filename(req, file, cb) {
-    cb(null, (0, _uuid.v4)() + _path["default"].extname(file.originalname));
+var _multerS = _interopRequireDefault(require("multer-s3"));
+
+var _nanoid = require("nanoid");
+
+require("dotenv/config");
+
+var accessClient = {
+  region: process.env.AWS_REGION,
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_KEY
+}; // console.log(accessClient);
+
+var s3 = new _s["default"](accessClient);
+var storage = (0, _multerS["default"])({
+  s3: s3,
+  bucket: process.env.AWS_BUCKET,
+  metadata: function metadata(req, file, cb) {
+    cb(null, {
+      fieldName: file.fieldname
+    });
+  },
+  key: function key(req, file, cb) {
+    var alternativo = new Date().getTime() + _path["default"].extname(file.originalname); // let campo = nanoid() + path.extname(file.originalname);
+
+
+    cb(null, alternativo);
   }
 });
-
 var upload = (0, _multer["default"])({
   storage: storage
 });

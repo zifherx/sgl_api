@@ -7,14 +7,13 @@ const userSchema = new Schema({
     password: { type: String, require: true },
     email: { type: String },
     cellphone: { type: String },
-    rutaPerfil: { type: String },
-    titlePerfil: { type: String },
     description: { type: String },
-    roles: { ref: 'Role', type: Schema.Types.ObjectId },
+    avatar: { type: String },
     status: { type: Boolean, default: true },
-    online: { type: Number, default: 0 },
-    sucursal: { type: String },
-    userCreator: { ref: 'User', type: Schema.Types.ObjectId }
+    online: { type: Boolean, default: false },
+    sucursal: { type: Schema.Types.ObjectId, ref: 'Sucursal' },
+    roles: [{ ref: 'Role', type: Schema.Types.ObjectId }],
+    createdBy: { ref: 'User', type: Schema.Types.ObjectId }
 }, {
     timestamps: true,
     versionKey: false

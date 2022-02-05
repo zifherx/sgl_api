@@ -34,31 +34,29 @@ var userSchema = new _mongoose.Schema({
   cellphone: {
     type: String
   },
-  rutaPerfil: {
-    type: String
-  },
-  titlePerfil: {
-    type: String
-  },
   description: {
     type: String
   },
-  roles: {
-    ref: 'Role',
-    type: _mongoose.Schema.Types.ObjectId
+  avatar: {
+    type: String
   },
   status: {
     type: Boolean,
     "default": true
   },
   online: {
-    type: Number,
-    "default": 0
+    type: Boolean,
+    "default": false
   },
   sucursal: {
-    type: String
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'Sucursal'
   },
-  userCreator: {
+  roles: [{
+    ref: 'Role',
+    type: _mongoose.Schema.Types.ObjectId
+  }],
+  createdBy: {
     ref: 'User',
     type: _mongoose.Schema.Types.ObjectId
   }

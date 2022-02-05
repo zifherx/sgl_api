@@ -11,8 +11,21 @@ var modeloSchema = new _mongoose.Schema({
   name: {
     type: String
   },
+  marca: {
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'Marca'
+  },
+  avatar: {
+    type: String,
+    "default": 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg'
+  },
   status: {
-    type: Boolean
+    type: Boolean,
+    "default": true
+  },
+  createdBy: {
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }
 }, {
   timestamps: true,
