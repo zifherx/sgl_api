@@ -1418,12 +1418,13 @@ leadCtrl.leadsByStatusFecha = /*#__PURE__*/function () {
             _context15.next = 4;
             return _Lead["default"].find({
               estado_lead: estado_lead,
-              fecha_ingreso: {
+              isConvertido: true,
+              fecha_conversion: {
                 $gte: new Date(start),
                 $lte: new Date(end)
               }
             }).sort({
-              fecha_ingreso: -1
+              fecha_conversion: -1
             }).populate({
               path: "sucursal_lead",
               select: "name"
@@ -1558,7 +1559,7 @@ leadCtrl.rankingLeadsConversionByDates = /*#__PURE__*/function () {
             break;
 
           case 10:
-            return _context16.abrupt("return", res.status(201).json({
+            return _context16.abrupt("return", res.status(404).json({
               message: "No existen leads aún"
             }));
 
@@ -1600,7 +1601,7 @@ leadCtrl.countLeadsByDates = /*#__PURE__*/function () {
             _context17.next = 4;
             return _Lead["default"].find({
               estado_lead: {
-                $regex: '.*' + estado + '.*'
+                $regex: ".*" + estado + ".*"
               },
               fecha_ingreso: {
                 $gte: new Date(start),
@@ -1643,60 +1644,236 @@ leadCtrl.countLeadsByDates = /*#__PURE__*/function () {
 
 leadCtrl.countLeadsConversionyDates = /*#__PURE__*/function () {
   var _ref18 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee18(req, res) {
-    var _req$body15, estado, start, end, conversionState, query;
+    var _req$body15, isBooking, isVenta, start, end, query;
 
     return _regenerator["default"].wrap(function _callee18$(_context18) {
       while (1) {
         switch (_context18.prev = _context18.next) {
           case 0:
-            _req$body15 = req.body, estado = _req$body15.estado, start = _req$body15.start, end = _req$body15.end;
+            _req$body15 = req.body, isBooking = _req$body15.isBooking, isVenta = _req$body15.isVenta, start = _req$body15.start, end = _req$body15.end;
             _context18.prev = 1;
-            _context18.next = 4;
-            return _EstadoConversion["default"].findOne({
-              name: estado
-            });
+            // const conversionState = await EstadoConversion.findOne({ name: estado });
+            query = null;
 
-          case 4:
-            conversionState = _context18.sent;
-            _context18.next = 7;
+            if (!isVenta) {
+              _context18.next = 9;
+              break;
+            }
+
+            _context18.next = 6;
             return _Lead["default"].find({
-              estado_conversion: conversionState._id,
-              fecha_ingreso: {
+              // estado_conversion: conversionState._id,
+              isBooking: isBooking,
+              isVenta: isVenta,
+              fecha_conversion: {
                 $gte: new Date(start),
                 $lte: new Date(end)
               }
             }).countDocuments();
 
-          case 7:
+          case 6:
+            query = _context18.sent;
+            _context18.next = 12;
+            break;
+
+          case 9:
+            _context18.next = 11;
+            return _Lead["default"].find({
+              // estado_conversion: conversionState._id,
+              isBooking: isBooking,
+              fecha_conversion: {
+                $gte: new Date(start),
+                $lte: new Date(end)
+              }
+            }).countDocuments();
+
+          case 11:
             query = _context18.sent;
 
+          case 12:
             if (query >= 0) {
               res.json({
                 qty: query
               });
             }
 
-            _context18.next = 15;
+            _context18.next = 19;
             break;
 
-          case 11:
-            _context18.prev = 11;
+          case 15:
+            _context18.prev = 15;
             _context18.t0 = _context18["catch"](1);
             console.log(_context18.t0);
             return _context18.abrupt("return", res.status(503).json({
               message: _context18.t0.message
             }));
 
-          case 15:
+          case 19:
           case "end":
             return _context18.stop();
         }
       }
-    }, _callee18, null, [[1, 11]]);
+    }, _callee18, null, [[1, 15]]);
   }));
 
   return function (_x35, _x36) {
     return _ref18.apply(this, arguments);
+  };
+}();
+
+leadCtrl.rankingLeadsByOriginDataDateConversion = /*#__PURE__*/function () {
+  var _ref19 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee19(req, res) {
+    var _req$body16, start, end, estado_lead, isAsignado, isBooking, isVenta, query, filter;
+
+    return _regenerator["default"].wrap(function _callee19$(_context19) {
+      while (1) {
+        switch (_context19.prev = _context19.next) {
+          case 0:
+            _req$body16 = req.body, start = _req$body16.start, end = _req$body16.end, estado_lead = _req$body16.estado_lead, isAsignado = _req$body16.isAsignado, isBooking = _req$body16.isBooking, isVenta = _req$body16.isVenta;
+            query = null;
+            filter = null;
+            _context19.prev = 3;
+
+            if (!estado_lead) {
+              _context19.next = 11;
+              break;
+            }
+
+            filter = {
+              estado_lead: estado_lead,
+              isAsignado: isAsignado,
+              fecha_ingreso: {
+                $gte: new Date(start),
+                $lte: new Date(end)
+              }
+            };
+            _context19.next = 8;
+            return _Lead["default"].aggregate([{
+              $match: filter
+            }, {
+              $group: {
+                _id: "$dataOrigin",
+                totalLeads: {
+                  $sum: 1
+                }
+              }
+            }, {
+              $sort: {
+                totalLeads: -1
+              }
+            }]);
+
+          case 8:
+            query = _context19.sent;
+            _context19.next = 23;
+            break;
+
+          case 11:
+            if (!isBooking) {
+              _context19.next = 18;
+              break;
+            }
+
+            filter = {
+              isBooking: isBooking,
+              fecha_conversion: {
+                $gte: new Date(start),
+                $lte: new Date(end)
+              }
+            };
+            _context19.next = 15;
+            return _Lead["default"].aggregate([{
+              $match: filter
+            }, {
+              $group: {
+                _id: "$dataOrigin",
+                totalLeads: {
+                  $sum: 1
+                }
+              }
+            }, {
+              $sort: {
+                totalLeads: -1
+              }
+            }]);
+
+          case 15:
+            query = _context19.sent;
+            _context19.next = 23;
+            break;
+
+          case 18:
+            if (!isVenta) {
+              _context19.next = 23;
+              break;
+            }
+
+            filter = {
+              isVenta: isVenta,
+              fecha_conversion: {
+                $gte: new Date(start),
+                $lte: new Date(end)
+              }
+            };
+            _context19.next = 22;
+            return _Lead["default"].aggregate([{
+              $match: filter
+            }, {
+              $group: {
+                _id: "$dataOrigin",
+                totalLeads: {
+                  $sum: 1
+                }
+              }
+            }, {
+              $sort: {
+                totalLeads: -1
+              }
+            }]);
+
+          case 22:
+            query = _context19.sent;
+
+          case 23:
+            if (!(query.length > 0)) {
+              _context19.next = 27;
+              break;
+            }
+
+            res.json({
+              total: query.length,
+              ranking: query
+            });
+            _context19.next = 28;
+            break;
+
+          case 27:
+            return _context19.abrupt("return", res.status(404).json({
+              message: "No existen leads aún"
+            }));
+
+          case 28:
+            _context19.next = 34;
+            break;
+
+          case 30:
+            _context19.prev = 30;
+            _context19.t0 = _context19["catch"](3);
+            console.log(_context19.t0);
+            return _context19.abrupt("return", res.status(503).json({
+              message: _context19.t0.message
+            }));
+
+          case 34:
+          case "end":
+            return _context19.stop();
+        }
+      }
+    }, _callee19, null, [[3, 30]]);
+  }));
+
+  return function (_x37, _x38) {
+    return _ref19.apply(this, arguments);
   };
 }();
 

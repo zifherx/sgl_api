@@ -21,6 +21,7 @@ router.post('/by-status', leadController.leadsByStatusFecha);
 router.post('/count/by-dates', leadController.countLeadsByDates);
 router.post('/conversion/count-by-dates', leadController.countLeadsConversionyDates);
 router.post('/ranking/by-dates', leadController.rankingLeadsConversionByDates);
+router.post('/ranking/by-origin', leadController.rankingLeadsByOriginDataDateConversion);
 
 // Descarte de interesado
 router.patch('/update/interested/:leadId', [authJwt.verifyToken, authJwt.isAsistente_CallCenterAdminDigital], leadController.isNoInteresado);

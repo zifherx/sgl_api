@@ -26,7 +26,8 @@ router.post('/', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAsist
 router.post('/by-status', _lead["default"].leadsByStatusFecha);
 router.post('/count/by-dates', _lead["default"].countLeadsByDates);
 router.post('/conversion/count-by-dates', _lead["default"].countLeadsConversionyDates);
-router.post('/ranking/by-dates', _lead["default"].rankingLeadsConversionByDates); // Descarte de interesado
+router.post('/ranking/by-dates', _lead["default"].rankingLeadsConversionByDates);
+router.post('/ranking/by-origin', _lead["default"].rankingLeadsByOriginDataDateConversion); // Descarte de interesado
 
 router.patch('/update/interested/:leadId', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAsistente_CallCenterAdminDigital], _lead["default"].isNoInteresado); // Descarte de atencion
 

@@ -589,12 +589,13 @@ leadCtrl.leadsByStatusFecha = async (req, res) => {
 	try {
 		const query = await Lead.find({
 			estado_lead,
-			fecha_ingreso: {
+			isConvertido: true,
+			fecha_conversion: {
 				$gte: new Date(start),
 				$lte: new Date(end),
 			},
 		})
-			.sort({ fecha_ingreso: -1 })
+			.sort({ fecha_conversion: -1 })
 			.populate({
 				path: "sucursal_lead",
 				select: "name",
@@ -680,7 +681,7 @@ leadCtrl.rankingLeadsConversionByDates = async (req, res) => {
 		if (query.length > 0) {
 			res.json({ total: query.length, ranking: query });
 		} else {
-			return res.status(201).json({ message: "No existen leads aún" });
+			return res.status(404).json({ message: "No existen leads aún" });
 		}
 	} catch (err) {
 		console.log(err);
@@ -692,9 +693,9 @@ leadCtrl.countLeadsByDates = async (req, res) => {
 	const { estado, start, end } = req.body;
 
 	try {
-		const query = await Lead.find({ 
-			estado_lead: {$regex: '.*' + estado + '.*'},
-			fecha_ingreso: { $gte: new Date(start), $lte: new Date(end) } 
+		const query = await Lead.find({
+			estado_lead: { $regex: ".*" + estado + ".*" },
+			fecha_ingreso: { $gte: new Date(start), $lte: new Date(end) },
 		}).countDocuments();
 		if (query >= 0) {
 			res.json({ qty: query });
@@ -706,17 +707,97 @@ leadCtrl.countLeadsByDates = async (req, res) => {
 };
 
 leadCtrl.countLeadsConversionyDates = async (req, res) => {
-	const { estado, start, end } = req.body;
+	const { isBooking, isVenta, start, end } = req.body;
 
 	try {
-		const conversionState = await EstadoConversion.findOne({name: estado});
+		// const conversionState = await EstadoConversion.findOne({ name: estado });
+		let query = null;
 
-		const query = await Lead.find({ 
-			estado_conversion: conversionState._id,
-			fecha_ingreso: { $gte: new Date(start), $lte: new Date(end) } 
-		}).countDocuments();
+		if (isVenta) {
+			query = await Lead.find({
+				// estado_conversion: conversionState._id,
+				isBooking,
+				isVenta,
+				fecha_conversion: { $gte: new Date(start), $lte: new Date(end) },
+			}).countDocuments();
+		} else {
+			query = await Lead.find({
+				// estado_conversion: conversionState._id,
+				isBooking,
+				fecha_conversion: { $gte: new Date(start), $lte: new Date(end) },
+			}).countDocuments();
+		}
+
 		if (query >= 0) {
 			res.json({ qty: query });
+		}
+	} catch (err) {
+		console.log(err);
+		return res.status(503).json({ message: err.message });
+	}
+};
+
+leadCtrl.rankingLeadsByOriginDataDateConversion = async (req, res) => {
+	const { start, end, estado_lead, isAsignado, isBooking, isVenta } = req.body;
+
+	let query = null;
+	let filter = null;
+
+	try {
+		if (estado_lead) {
+			filter = { estado_lead, isAsignado, fecha_ingreso: { $gte: new Date(start), $lte: new Date(end) } };
+			query = await Lead.aggregate([
+				{
+					$match: filter,
+				},
+				{
+					$group: {
+						_id: "$dataOrigin",
+						totalLeads: { $sum: 1 },
+					},
+				},
+				{
+					$sort: { totalLeads: -1 },
+				},
+			]);
+		} else if (isBooking) {
+			filter = { isBooking, fecha_conversion: { $gte: new Date(start), $lte: new Date(end) } };
+			query = await Lead.aggregate([
+				{
+					$match: filter,
+				},
+				{
+					$group: {
+						_id: "$dataOrigin",
+						totalLeads: { $sum: 1 },
+					},
+				},
+				{
+					$sort: { totalLeads: -1 },
+				},
+			]);
+		} else if (isVenta) {
+			filter = { isVenta: isVenta, fecha_conversion: { $gte: new Date(start), $lte: new Date(end) } };
+			query = await Lead.aggregate([
+				{
+					$match: filter,
+				},
+				{
+					$group: {
+						_id: "$dataOrigin",
+						totalLeads: { $sum: 1 },
+					},
+				},
+				{
+					$sort: { totalLeads: -1 },
+				},
+			]);
+		}
+
+		if (query.length > 0) {
+			res.json({ total: query.length, ranking: query });
+		} else {
+			return res.status(404).json({ message: "No existen leads aún" });
 		}
 	} catch (err) {
 		console.log(err);
