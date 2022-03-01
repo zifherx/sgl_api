@@ -29,6 +29,8 @@ var _Seller = _interopRequireDefault(require("../models/Seller"));
 
 var _EstadoConversion = _interopRequireDefault(require("../models/EstadoConversion"));
 
+var _MotivoRechazo = _interopRequireDefault(require("../models/MotivoRechazo"));
+
 var leadCtrl = {};
 
 leadCtrl.getAll = /*#__PURE__*/function () {
@@ -54,6 +56,9 @@ leadCtrl.getAll = /*#__PURE__*/function () {
               select: "name avatar"
             }).populate({
               path: "estado_conversion",
+              select: "name"
+            }).populate({
+              path: "motivoDesplegable",
               select: "name"
             }).populate({
               path: "auto",
@@ -152,6 +157,9 @@ leadCtrl.getOneById = /*#__PURE__*/function () {
               path: "estado_conversion",
               select: "name"
             }).populate({
+              path: "motivoDesplegable",
+              select: "name"
+            }).populate({
               path: "auto",
               select: "chasis model cod_tdp version",
               populate: [{
@@ -186,7 +194,7 @@ leadCtrl.getOneById = /*#__PURE__*/function () {
             }
 
             res.json({
-              lead: query
+              one: query
             });
             _context2.next = 10;
             break;
@@ -316,14 +324,14 @@ leadCtrl.createOne = /*#__PURE__*/function () {
 
 leadCtrl.isNoInteresado = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
-    var leadId, _req$body2, estado_lead, isNoInteresado, sucursal, fecha_noInteresado, motivo_rechazo, sucursalFound, query;
+    var leadId, _req$body2, estado_lead, isNoInteresado, sucursal, fecha_noInteresado, motivoDesplegable, motivo_rechazo, sucursalFound, motivoFound, query;
 
     return _regenerator["default"].wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
             leadId = req.params.leadId;
-            _req$body2 = req.body, estado_lead = _req$body2.estado_lead, isNoInteresado = _req$body2.isNoInteresado, sucursal = _req$body2.sucursal, fecha_noInteresado = _req$body2.fecha_noInteresado, motivo_rechazo = _req$body2.motivo_rechazo;
+            _req$body2 = req.body, estado_lead = _req$body2.estado_lead, isNoInteresado = _req$body2.isNoInteresado, sucursal = _req$body2.sucursal, fecha_noInteresado = _req$body2.fecha_noInteresado, motivoDesplegable = _req$body2.motivoDesplegable, motivo_rechazo = _req$body2.motivo_rechazo;
             _context4.prev = 2;
             _context4.next = 5;
             return _Sucursal["default"].findOne({
@@ -344,51 +352,70 @@ leadCtrl.isNoInteresado = /*#__PURE__*/function () {
 
           case 8:
             _context4.next = 10;
+            return _MotivoRechazo["default"].findOne({
+              name: motivoDesplegable
+            });
+
+          case 10:
+            motivoFound = _context4.sent;
+
+            if (motivoFound) {
+              _context4.next = 13;
+              break;
+            }
+
+            return _context4.abrupt("return", res.status(404).json({
+              message: "Motivo ".concat(motivoDesplegable, " no encontrado")
+            }));
+
+          case 13:
+            _context4.next = 15;
             return _Lead["default"].findByIdAndUpdate(leadId, {
               estado_lead: estado_lead,
               isNoInteresado: isNoInteresado,
               sucursal_lead: sucursalFound._id,
               fecha_noInteresado: fecha_noInteresado,
+              motivoDesplegable: motivoFound._id,
               motivo_rechazo: motivo_rechazo
             });
 
-          case 10:
+          case 15:
             query = _context4.sent;
 
             if (!query) {
-              _context4.next = 15;
+              _context4.next = 20;
               break;
             }
 
             res.json({
               message: "Lead actualizado con éxito"
             });
-            _context4.next = 16;
+            _context4.next = 21;
             break;
 
-          case 15:
+          case 20:
             return _context4.abrupt("return", res.status(404).json({
               message: "Lead no encontrado para actualizar"
             }));
 
-          case 16:
-            _context4.next = 22;
+          case 21:
+            _context4.next = 27;
             break;
 
-          case 18:
-            _context4.prev = 18;
+          case 23:
+            _context4.prev = 23;
             _context4.t0 = _context4["catch"](2);
             console.log(_context4.t0);
             return _context4.abrupt("return", res.status(503).json({
               message: _context4.t0.message
             }));
 
-          case 22:
+          case 27:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[2, 18]]);
+    }, _callee4, null, [[2, 23]]);
   }));
 
   return function (_x7, _x8) {

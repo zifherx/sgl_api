@@ -43,6 +43,8 @@ var _originData = _interopRequireDefault(require("./originData.routes"));
 
 var _estado = _interopRequireDefault(require("./estado.routes"));
 
+var _motivoRechazo = _interopRequireDefault(require("./motivoRechazo.routes"));
+
 var router = (0, _express.Router)();
 router.get('/', _api["default"].getAll);
 router.use('/roles', _roles["default"]);
@@ -61,6 +63,7 @@ router.use('/finances', _financiamiento["default"]);
 router.use('/shift', _conversion["default"]);
 router.use('/origin', _originData["default"]);
 router.use('/status', _estado["default"]);
+router.use('/motivo-rechazo', _motivoRechazo["default"]);
 var _default = router;
 exports["default"] = _default;
 //# sourceMappingURL=index.js.map

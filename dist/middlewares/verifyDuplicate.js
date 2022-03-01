@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.checkUserDuplicate = exports.checkSellerDuplicate = exports.checkRoleDuplicate = exports.checkOriginDuplicate = exports.checkDuplicateVehiculo = exports.checkDuplicateSucursal = exports.checkDuplicateModelo = exports.checkDuplicateMarca = exports.checkDuplicateFinances = exports.checkDuplicateConversion = exports.checkDuplicateCity = exports.checkDuplicateChasis = exports.checkDuplicateBanco = void 0;
+exports.checkUserDuplicate = exports.checkSellerDuplicate = exports.checkRoleDuplicate = exports.checkOriginDuplicate = exports.checkDuplicateVehiculo = exports.checkDuplicateSucursal = exports.checkDuplicateMotivoRechazo = exports.checkDuplicateModelo = exports.checkDuplicateMarca = exports.checkDuplicateFinances = exports.checkDuplicateConversion = exports.checkDuplicateCity = exports.checkDuplicateChasis = exports.checkDuplicateBanco = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
@@ -34,6 +34,8 @@ var _Financiamiento = _interopRequireDefault(require("../models/Financiamiento")
 var _EstadoConversion = _interopRequireDefault(require("../models/EstadoConversion"));
 
 var _OriginData = _interopRequireDefault(require("../models/OriginData"));
+
+var _MotivoRechazo = _interopRequireDefault(require("../models/MotivoRechazo"));
 
 var checkRoleDuplicate = /*#__PURE__*/function () {
   var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(req, res, next) {
@@ -629,4 +631,47 @@ var checkOriginDuplicate = /*#__PURE__*/function () {
 }();
 
 exports.checkOriginDuplicate = checkOriginDuplicate;
+
+var checkDuplicateMotivoRechazo = /*#__PURE__*/function () {
+  var _ref14 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee14(req, res, next) {
+    var name, encontrado;
+    return _regenerator["default"].wrap(function _callee14$(_context14) {
+      while (1) {
+        switch (_context14.prev = _context14.next) {
+          case 0:
+            name = req.body.name;
+            _context14.next = 3;
+            return _MotivoRechazo["default"].findOne({
+              name: name
+            });
+
+          case 3:
+            encontrado = _context14.sent;
+
+            if (!encontrado) {
+              _context14.next = 6;
+              break;
+            }
+
+            return _context14.abrupt("return", res.status(500).json({
+              message: 'El motivo de rechazo ya existe'
+            }));
+
+          case 6:
+            next();
+
+          case 7:
+          case "end":
+            return _context14.stop();
+        }
+      }
+    }, _callee14);
+  }));
+
+  return function checkDuplicateMotivoRechazo(_x40, _x41, _x42) {
+    return _ref14.apply(this, arguments);
+  };
+}();
+
+exports.checkDuplicateMotivoRechazo = checkDuplicateMotivoRechazo;
 //# sourceMappingURL=verifyDuplicate.js.map

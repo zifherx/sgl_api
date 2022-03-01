@@ -4,6 +4,7 @@ const leadSchema = new Schema({
     //Solicitud Lead
     sucursal_lead: { type: Schema.Types.ObjectId, ref: 'Sucursal' },
     dataOrigin: { type: Schema.Types.ObjectId, ref: 'OriginData' },
+    motivoDesplegable: { type: Schema.Types.ObjectId, ref: 'MotivoRechazo', default: null },
     motivo_rechazo: { type: String },
     motivo_desistencia: { type: String },
     comentario: { type: String },

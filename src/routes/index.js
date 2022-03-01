@@ -16,6 +16,7 @@ import financiamientoRoutes from './financiamiento.routes';
 import conversionRoutes from './conversion.routes';
 import originRoutes from './originData.routes';
 import statusRoutes from './estado.routes';
+import rechazoRoutes from './motivoRechazo.routes';
 
 const router = Router();
 
@@ -36,5 +37,6 @@ router.use('/finances', financiamientoRoutes);
 router.use('/shift', conversionRoutes);
 router.use('/origin', originRoutes);
 router.use('/status', statusRoutes);
+router.use('/motivo-rechazo', rechazoRoutes);
 
 export default router;

@@ -7,6 +7,7 @@ import Financiamiento from "../models/Financiamiento";
 import Banco from "../models/Banco";
 import Seller from "../models/Seller";
 import EstadoConversion from "../models/EstadoConversion";
+import MotivoRechazo from '../models/MotivoRechazo';
 
 const leadCtrl = {};
 
@@ -31,6 +32,10 @@ leadCtrl.getAll = async (req, res) => {
 			})
 			.populate({
 				path: "estado_conversion",
+				select: "name",
+			})
+			.populate({
+				path: "motivoDesplegable",
 				select: "name",
 			})
 			.populate({
@@ -100,6 +105,10 @@ leadCtrl.getOneById = async (req, res) => {
 				select: "name",
 			})
 			.populate({
+				path: "motivoDesplegable",
+				select: "name",
+			})
+			.populate({
 				path: "auto",
 				select: "chasis model cod_tdp version",
 				populate: [
@@ -131,7 +140,7 @@ leadCtrl.getOneById = async (req, res) => {
 			});
 
 		if (query) {
-			res.json({ lead: query });
+			res.json({ one: query });
 		} else {
 			return res.status(404).json({ message: "No existen el lead" });
 		}
@@ -176,18 +185,21 @@ leadCtrl.createOne = async (req, res) => {
 
 leadCtrl.isNoInteresado = async (req, res) => {
 	const { leadId } = req.params;
-	const { estado_lead, isNoInteresado, sucursal, fecha_noInteresado, motivo_rechazo } = req.body;
+	const { estado_lead, isNoInteresado, sucursal, fecha_noInteresado,motivoDesplegable, motivo_rechazo } = req.body;
 
 	try {
 		const sucursalFound = await Sucursal.findOne({ name: sucursal });
-
 		if (!sucursalFound) return res.status(404).json({ message: `Sucursal ${sucursal} no encontrada` });
+
+		const motivoFound = await MotivoRechazo.findOne({name: motivoDesplegable});
+		if(!motivoFound) return res.status(404).json({message: `Motivo ${motivoDesplegable} no encontrado`});
 
 		const query = await Lead.findByIdAndUpdate(leadId, {
 			estado_lead,
 			isNoInteresado,
 			sucursal_lead: sucursalFound._id,
 			fecha_noInteresado,
+			motivoDesplegable: motivoFound._id,
 			motivo_rechazo,
 		});
 

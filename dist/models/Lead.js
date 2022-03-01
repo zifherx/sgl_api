@@ -17,6 +17,11 @@ var leadSchema = new _mongoose.Schema({
     type: _mongoose.Schema.Types.ObjectId,
     ref: 'OriginData'
   },
+  motivoDesplegable: {
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'MotivoRechazo',
+    "default": null
+  },
   motivo_rechazo: {
     type: String
   },

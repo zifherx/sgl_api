@@ -10,6 +10,7 @@ import City from '../models/City'
 import Financiamiento from '../models/Financiamiento'
 import EstadoConversion from '../models/EstadoConversion';
 import OriginData from '../models/OriginData';
+import MotivoRechazo from '../models/MotivoRechazo'
 
 export const checkRoleDuplicate = async(req, res, next) => {
     const { name } = req.body
@@ -130,5 +131,13 @@ export const checkOriginDuplicate = async(req, res, next) => {
 
     const encontrado = await OriginData.findOne({ name: name });
     if (encontrado) return res.status(500).json({ message: 'El origen ya existe' });
+    next();
+}
+
+export const checkDuplicateMotivoRechazo = async(req, res, next) => {
+    const { name } = req.body;
+
+    const encontrado = await MotivoRechazo.findOne({ name });
+    if (encontrado) return res.status(500).json({ message: 'El motivo de rechazo ya existe' });
     next();
 }
