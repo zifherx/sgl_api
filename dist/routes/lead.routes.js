@@ -23,6 +23,7 @@ router.post('/by-dates', _lead["default"].leadsBySucursalFecha); // Crear lead
 
 router.post('/', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAsistente_CallCenterAdminDigital], _lead["default"].createOne); // Leads by Fecha y Status Conversion
 
+router.post('/by-modificado', _lead["default"].leadsModificados);
 router.post('/by-status', _lead["default"].leadsByStatusFecha);
 router.post('/count/by-dates', _lead["default"].countLeadsByDates);
 router.post('/conversion/count-by-dates', _lead["default"].countLeadsConversionyDates);

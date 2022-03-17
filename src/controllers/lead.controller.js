@@ -817,4 +817,77 @@ leadCtrl.rankingLeadsByOriginDataDateConversion = async (req, res) => {
 	}
 };
 
+leadCtrl.leadsModificados = async (req, res) => {
+	const {start, end} = req.body;
+	try {
+		const query = await Lead.find({
+			updatedAt: { $gte: new Date(start), $lt: new Date(end)},
+			// createdAt: { $ne: new Date(start)}
+		}).sort({customer_name: 1})
+		.populate({
+			path: "sucursal_lead",
+			select: "name",
+		})
+		.populate({
+			path: "dataOrigin",
+			select: "name",
+		})
+		.populate({
+			path: "tipoFinanciamiento",
+			select: "tipo",
+		})
+		.populate({
+			path: "entidad_bancaria",
+			select: "name avatar",
+		})
+		.populate({
+			path: "estado_conversion",
+			select: "name",
+		})
+		.populate({
+			path: "motivoDesplegable",
+			select: "name",
+		})
+		.populate({
+			path: "auto",
+			select: "chasis model cod_tdp, version",
+			populate: [
+				{
+					path: "chasis",
+					select: "name",
+				},
+				{
+					path: "model",
+					select: "name marca avatar",
+					populate: {
+						path: "marca",
+						select: "name avatar",
+					},
+				},
+			],
+		})
+		.populate({
+			path: "asesorAsignado",
+			select: "name tipo marca avatar",
+			populate: {
+				path: "marca",
+				select: "name avatar",
+			},
+		})
+		.populate({
+			path: "createdBy",
+			select: "name username",
+		});
+
+		if(query.length > 0){
+			res.json({total: query.length, all: query});
+		}else{
+			return res.status(404).json({message: 'No se encontraron leads'});
+		}
+	} catch (err) {
+		console.log(err);
+		return res.status(503).json({ message: err.message });
+	}
+}
+
 export default leadCtrl;

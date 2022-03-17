@@ -1904,6 +1904,114 @@ leadCtrl.rankingLeadsByOriginDataDateConversion = /*#__PURE__*/function () {
   };
 }();
 
+leadCtrl.leadsModificados = /*#__PURE__*/function () {
+  var _ref20 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee20(req, res) {
+    var _req$body17, start, end, query;
+
+    return _regenerator["default"].wrap(function _callee20$(_context20) {
+      while (1) {
+        switch (_context20.prev = _context20.next) {
+          case 0:
+            _req$body17 = req.body, start = _req$body17.start, end = _req$body17.end;
+            _context20.prev = 1;
+            _context20.next = 4;
+            return _Lead["default"].find({
+              updatedAt: {
+                $gte: new Date(start),
+                $lt: new Date(end)
+              } // createdAt: { $ne: new Date(start)}
+
+            }).sort({
+              customer_name: 1
+            }).populate({
+              path: "sucursal_lead",
+              select: "name"
+            }).populate({
+              path: "dataOrigin",
+              select: "name"
+            }).populate({
+              path: "tipoFinanciamiento",
+              select: "tipo"
+            }).populate({
+              path: "entidad_bancaria",
+              select: "name avatar"
+            }).populate({
+              path: "estado_conversion",
+              select: "name"
+            }).populate({
+              path: "motivoDesplegable",
+              select: "name"
+            }).populate({
+              path: "auto",
+              select: "chasis model cod_tdp, version",
+              populate: [{
+                path: "chasis",
+                select: "name"
+              }, {
+                path: "model",
+                select: "name marca avatar",
+                populate: {
+                  path: "marca",
+                  select: "name avatar"
+                }
+              }]
+            }).populate({
+              path: "asesorAsignado",
+              select: "name tipo marca avatar",
+              populate: {
+                path: "marca",
+                select: "name avatar"
+              }
+            }).populate({
+              path: "createdBy",
+              select: "name username"
+            });
+
+          case 4:
+            query = _context20.sent;
+
+            if (!(query.length > 0)) {
+              _context20.next = 9;
+              break;
+            }
+
+            res.json({
+              total: query.length,
+              all: query
+            });
+            _context20.next = 10;
+            break;
+
+          case 9:
+            return _context20.abrupt("return", res.status(404).json({
+              message: 'No se encontraron leads'
+            }));
+
+          case 10:
+            _context20.next = 16;
+            break;
+
+          case 12:
+            _context20.prev = 12;
+            _context20.t0 = _context20["catch"](1);
+            console.log(_context20.t0);
+            return _context20.abrupt("return", res.status(503).json({
+              message: _context20.t0.message
+            }));
+
+          case 16:
+          case "end":
+            return _context20.stop();
+        }
+      }
+    }, _callee20, null, [[1, 12]]);
+  }));
+
+  return function (_x39, _x40) {
+    return _ref20.apply(this, arguments);
+  };
+}();
+
 var _default = leadCtrl;
 exports["default"] = _default;
 //# sourceMappingURL=lead.controller.js.map
