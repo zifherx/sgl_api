@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 
 const leadSchema = new Schema({
     //Solicitud Lead
+    codigo_interno: { type: String },
     sucursal_lead: { type: Schema.Types.ObjectId, ref: 'Sucursal' },
     dataOrigin: { type: Schema.Types.ObjectId, ref: 'OriginData' },
     motivoDesplegable: { type: Schema.Types.ObjectId, ref: 'MotivoRechazo', default: null },

@@ -9,6 +9,9 @@ var _mongoose = require("mongoose");
 
 var leadSchema = new _mongoose.Schema({
   //Solicitud Lead
+  codigo_interno: {
+    type: String
+  },
   sucursal_lead: {
     type: _mongoose.Schema.Types.ObjectId,
     ref: 'Sucursal'

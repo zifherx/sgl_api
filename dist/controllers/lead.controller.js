@@ -175,11 +175,14 @@ leadCtrl.getOneById = /*#__PURE__*/function () {
               }]
             }).populate({
               path: "asesorAsignado",
-              select: "name tipo marca avatar",
-              populate: {
+              select: "name tipo marca avatar sucursal",
+              populate: [{
                 path: "marca",
                 select: "name avatar"
-              }
+              }, {
+                path: "sucursal",
+                select: "name"
+              }]
             }).populate({
               path: "createdBy",
               select: "name username"
@@ -231,15 +234,16 @@ leadCtrl.getOneById = /*#__PURE__*/function () {
 
 leadCtrl.createOne = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
-    var _req$body, dataOrigin, customer_name, customer_document, customer_city, customer_cellphone, customer_cellphone2, customer_email, fecha_ingreso, createdBy, newObj, originFound, userFound, query;
+    var _req$body, codigo_interno, dataOrigin, customer_name, customer_document, customer_city, customer_cellphone, customer_cellphone2, customer_email, fecha_ingreso, createdBy, newObj, originFound, userFound, query;
 
     return _regenerator["default"].wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            _req$body = req.body, dataOrigin = _req$body.dataOrigin, customer_name = _req$body.customer_name, customer_document = _req$body.customer_document, customer_city = _req$body.customer_city, customer_cellphone = _req$body.customer_cellphone, customer_cellphone2 = _req$body.customer_cellphone2, customer_email = _req$body.customer_email, fecha_ingreso = _req$body.fecha_ingreso, createdBy = _req$body.createdBy;
+            _req$body = req.body, codigo_interno = _req$body.codigo_interno, dataOrigin = _req$body.dataOrigin, customer_name = _req$body.customer_name, customer_document = _req$body.customer_document, customer_city = _req$body.customer_city, customer_cellphone = _req$body.customer_cellphone, customer_cellphone2 = _req$body.customer_cellphone2, customer_email = _req$body.customer_email, fecha_ingreso = _req$body.fecha_ingreso, createdBy = _req$body.createdBy;
             _context3.prev = 1;
             newObj = new _Lead["default"]({
+              codigo_interno: codigo_interno,
               customer_name: customer_name,
               customer_document: customer_document,
               customer_city: customer_city,
@@ -592,40 +596,57 @@ leadCtrl.isAtendido = /*#__PURE__*/function () {
 
 leadCtrl.isAsignacion = /*#__PURE__*/function () {
   var _ref6 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(req, res) {
-    var leadId, _req$body4, estado_lead, isAsignado, fecha_asignacion, comentario, observacion, asesorAsignado, auto, financiamiento, entidad_bancaria, tentativa_inicial, precioUnidad, query, asesorFound, autoFound, financiamientoFound, bancoFound;
+    var leadId, _req$body4, estado_lead, isAsignado, fecha_asignacion, comentario, observacion, sucursal, asesorAsignado, auto, financiamiento, entidad_bancaria, tentativa_inicial, precioUnidad, query, sucursalFound, asesorFound, autoFound, financiamientoFound, bancoFound;
 
     return _regenerator["default"].wrap(function _callee6$(_context6) {
       while (1) {
         switch (_context6.prev = _context6.next) {
           case 0:
             leadId = req.params.leadId;
-            _req$body4 = req.body, estado_lead = _req$body4.estado_lead, isAsignado = _req$body4.isAsignado, fecha_asignacion = _req$body4.fecha_asignacion, comentario = _req$body4.comentario, observacion = _req$body4.observacion, asesorAsignado = _req$body4.asesorAsignado, auto = _req$body4.auto, financiamiento = _req$body4.financiamiento, entidad_bancaria = _req$body4.entidad_bancaria, tentativa_inicial = _req$body4.tentativa_inicial, precioUnidad = _req$body4.precioUnidad;
+            _req$body4 = req.body, estado_lead = _req$body4.estado_lead, isAsignado = _req$body4.isAsignado, fecha_asignacion = _req$body4.fecha_asignacion, comentario = _req$body4.comentario, observacion = _req$body4.observacion, sucursal = _req$body4.sucursal, asesorAsignado = _req$body4.asesorAsignado, auto = _req$body4.auto, financiamiento = _req$body4.financiamiento, entidad_bancaria = _req$body4.entidad_bancaria, tentativa_inicial = _req$body4.tentativa_inicial, precioUnidad = _req$body4.precioUnidad;
             _context6.prev = 2;
             query = null;
             _context6.next = 6;
+            return _Sucursal["default"].findOne({
+              name: sucursal
+            });
+
+          case 6:
+            sucursalFound = _context6.sent;
+            _context6.next = 9;
             return _Seller["default"].findOne({
               name: asesorAsignado
             });
 
-          case 6:
+          case 9:
             asesorFound = _context6.sent;
-            _context6.next = 9;
+            _context6.next = 12;
             return _Vehicle["default"].findOne({
               cod_tdp: auto
             });
 
-          case 9:
+          case 12:
             autoFound = _context6.sent;
-            _context6.next = 12;
+            _context6.next = 15;
             return _Financiamiento["default"].findOne({
               name: financiamiento
             });
 
-          case 12:
+          case 15:
             financiamientoFound = _context6.sent;
 
+            if (sucursalFound) {
+              _context6.next = 18;
+              break;
+            }
+
+            return _context6.abrupt("return", res.status(404).json({
+              message: "Sucursal ".concat(sucursal, " no encontrada")
+            }));
+
+          case 18:
             if (asesorFound) {
-              _context6.next = 15;
+              _context6.next = 20;
               break;
             }
 
@@ -633,9 +654,9 @@ leadCtrl.isAsignacion = /*#__PURE__*/function () {
               message: "Asesor ".concat(asesorAsignado, " no encontrado")
             }));
 
-          case 15:
+          case 20:
             if (autoFound) {
-              _context6.next = 17;
+              _context6.next = 22;
               break;
             }
 
@@ -643,9 +664,9 @@ leadCtrl.isAsignacion = /*#__PURE__*/function () {
               message: "Veh\xEDculo ".concat(auto, " no encontrado")
             }));
 
-          case 17:
+          case 22:
             if (financiamientoFound) {
-              _context6.next = 19;
+              _context6.next = 24;
               break;
             }
 
@@ -653,14 +674,15 @@ leadCtrl.isAsignacion = /*#__PURE__*/function () {
               message: "Tipo de financiamiento ".concat(financiamiento, " no encontrado")
             }));
 
-          case 19:
+          case 24:
             if (!(entidad_bancaria == null || entidad_bancaria == undefined)) {
-              _context6.next = 25;
+              _context6.next = 30;
               break;
             }
 
-            _context6.next = 22;
+            _context6.next = 27;
             return _Lead["default"].findByIdAndUpdate(leadId, {
+              sucursal_lead: sucursalFound._id,
               estado_lead: estado_lead,
               isAsignado: isAsignado,
               fecha_asignacion: fecha_asignacion,
@@ -673,22 +695,22 @@ leadCtrl.isAsignacion = /*#__PURE__*/function () {
               precioUnidad: precioUnidad
             });
 
-          case 22:
+          case 27:
             query = _context6.sent;
-            _context6.next = 33;
+            _context6.next = 38;
             break;
 
-          case 25:
-            _context6.next = 27;
+          case 30:
+            _context6.next = 32;
             return _Banco["default"].findOne({
               name: entidad_bancaria
             });
 
-          case 27:
+          case 32:
             bancoFound = _context6.sent;
 
             if (bancoFound) {
-              _context6.next = 30;
+              _context6.next = 35;
               break;
             }
 
@@ -696,9 +718,10 @@ leadCtrl.isAsignacion = /*#__PURE__*/function () {
               message: "Entidad ".concat(entidad_bancaria, " no encontrado")
             }));
 
-          case 30:
-            _context6.next = 32;
+          case 35:
+            _context6.next = 37;
             return _Lead["default"].findByIdAndUpdate(leadId, {
+              sucursal_lead: sucursalFound._id,
               estado_lead: estado_lead,
               isAsignado: isAsignado,
               fecha_asignacion: fecha_asignacion,
@@ -712,44 +735,44 @@ leadCtrl.isAsignacion = /*#__PURE__*/function () {
               precioUnidad: precioUnidad
             });
 
-          case 32:
+          case 37:
             query = _context6.sent;
 
-          case 33:
+          case 38:
             if (!query) {
-              _context6.next = 37;
+              _context6.next = 42;
               break;
             }
 
             res.json({
               message: "Lead actualizado con éxito"
             });
-            _context6.next = 38;
+            _context6.next = 43;
             break;
 
-          case 37:
+          case 42:
             return _context6.abrupt("return", res.status(404).json({
               message: "Lead no encontrado para actualizar"
             }));
 
-          case 38:
-            _context6.next = 44;
+          case 43:
+            _context6.next = 49;
             break;
 
-          case 40:
-            _context6.prev = 40;
+          case 45:
+            _context6.prev = 45;
             _context6.t0 = _context6["catch"](2);
             console.log(_context6.t0);
             return _context6.abrupt("return", res.status(503).json({
               message: _context6.t0.message
             }));
 
-          case 44:
+          case 49:
           case "end":
             return _context6.stop();
         }
       }
-    }, _callee6, null, [[2, 40]]);
+    }, _callee6, null, [[2, 45]]);
   }));
 
   return function (_x11, _x12) {
@@ -1984,7 +2007,7 @@ leadCtrl.leadsModificados = /*#__PURE__*/function () {
 
           case 9:
             return _context20.abrupt("return", res.status(404).json({
-              message: 'No se encontraron leads'
+              message: "No se encontraron leads"
             }));
 
           case 10:
