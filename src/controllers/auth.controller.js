@@ -47,7 +47,7 @@ authCtrl.cambiarContrasena = async(req, res) => {
         if (newObj) res.json({ message: 'Contraseña actualizada con éxito' })
     } catch (err) {
         console.log(err)
-        return res.status(503).json({ error: err.message })
+        return res.status(503).json({ message: err.message })
     }
 }
 
@@ -60,7 +60,8 @@ authCtrl.cerrarSesion = async(req, res) => {
         const offline = await User.findByIdAndUpdate(id, { online: false })
         if (offline) return res.json({ message: 'Sesión cerrada con éxito' })
     } catch (err) {
-        return res.status(503).json({ error: err });
+        console.log(err);
+        return res.status(503).json({ message: err.message });
     }
 }
 
@@ -76,7 +77,7 @@ authCtrl.forzarCierreSesion = async(req, res) => {
         if (offline) return res.json({ message: 'Se forzó el cierre de sesión' })
     } catch (err) {
         console.log(err);
-        return res.status(503).json({ error: err });
+        return res.status(503).json({ message: err.message });
     }
 }
 

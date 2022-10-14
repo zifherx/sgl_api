@@ -19,6 +19,7 @@ router.post('/', [authJwt.verifyToken, authJwt.isAsistente_CallCenterAdminDigita
 // Leads by Fecha y Status Conversion
 router.post('/by-modificado', leadController.leadsModificados);
 router.post('/by-status', leadController.leadsByStatusFecha);
+router.post('/by-marca', leadController.getLeadsByMarcaFecha);//Nueva Ruta
 router.post('/count/by-dates', leadController.countLeadsByDates);
 router.post('/conversion/count-by-dates', leadController.countLeadsConversionyDates);
 router.post('/ranking/by-dates', leadController.rankingLeadsConversionByDates);

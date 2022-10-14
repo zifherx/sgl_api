@@ -81,6 +81,8 @@ var leadSchema = new _mongoose.Schema({
     type: String,
     "default": 'INGRESADO'
   },
+  // estadoLeadE: { type: Schema.Types.ObjectId, ref: 'Estado', default: null},
+  // estadoConversion: { type: String},
   estado_conversion: {
     type: _mongoose.Schema.Types.ObjectId,
     ref: 'EstadoConversion',
@@ -159,6 +161,14 @@ var leadSchema = new _mongoose.Schema({
     type: Date
   },
   //Vehiculo
+  marcaVehiculo: {
+    type: String
+  },
+  marcaVehiculoE: {
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'Marca',
+    "default": null
+  },
   auto: {
     type: _mongoose.Schema.Types.ObjectId,
     ref: 'Vehicle',

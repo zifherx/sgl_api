@@ -48,6 +48,10 @@ var userSchema = new _mongoose.Schema({
     type: Boolean,
     "default": false
   },
+  marca: [{
+    type: _mongoose.Schema.Types.ObjectId,
+    ref: 'Marca'
+  }],
   sucursal: {
     type: _mongoose.Schema.Types.ObjectId,
     ref: 'Sucursal'

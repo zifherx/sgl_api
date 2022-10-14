@@ -8,6 +8,7 @@ import Banco from "../models/Banco";
 import Seller from "../models/Seller";
 import EstadoConversion from "../models/EstadoConversion";
 import MotivoRechazo from "../models/MotivoRechazo";
+import Marca from "../models/Marca";
 
 const leadCtrl = {};
 
@@ -157,11 +158,12 @@ leadCtrl.getOneById = async (req, res) => {
 };
 
 leadCtrl.createOne = async (req, res) => {
-     const { codigo_interno, dataOrigin, customer_name, customer_document, customer_city, customer_cellphone, customer_cellphone2, customer_email, fecha_ingreso, createdBy } = req.body;
+     const { codigo_interno, dataOrigin, marcaVehiculo, marcaVehiculoE,customer_name, customer_document, customer_city, customer_cellphone, customer_cellphone2, customer_email, fecha_ingreso, createdBy } = req.body;
 
      try {
           const newObj = new Lead({
                codigo_interno,
+               marcaVehiculo,
                customer_name,
                customer_document,
                customer_city,
@@ -174,6 +176,10 @@ leadCtrl.createOne = async (req, res) => {
           const originFound = await OriginData.findOne({ name: dataOrigin });
           if (!originFound) return res.status(404).json({ message: `Origen ${dataOrigin} no encontrada` });
           newObj.dataOrigin = originFound._id;
+
+          const marcaFound = await Marca.findOne({name: marcaVehiculoE });
+          if(!marcaFound) return res.status(404).json({message: `Marca ${marcaVehiculoE} no encontrada`});
+          newObj.marcaVehiculoE = marcaFound._id;
 
           const userFound = await User.findOne({ username: createdBy });
           if (!userFound) return res.status(404).json({ message: `Empleado ${createdBy} no encontrado` });
@@ -713,10 +719,11 @@ leadCtrl.rankingLeadsConversionByDates = async (req, res) => {
 };
 
 leadCtrl.countLeadsByDates = async (req, res) => {
-     const { estado, start, end } = req.body;
+     const { marca, estado, start, end } = req.body;
 
      try {
           const query = await Lead.find({
+               marcaVehiculo: { $regex: ".*" + marca + ".*" },
                estado_lead: { $regex: ".*" + estado + ".*" },
                fecha_ingreso: { $gte: new Date(start), $lte: new Date(end) },
           }).countDocuments();
@@ -901,5 +908,154 @@ leadCtrl.leadsModificados = async (req, res) => {
           return res.status(503).json({ message: err.message });
      }
 };
+
+//Nuevos Cambios
+leadCtrl.getLeadsByMarcaFecha = async(req, res) => {
+     const { marca, start, end } = req.body;
+     let query = null;
+
+     try {
+          if(start == null || start == undefined){
+               query = await Lead.find({
+                    marcaVehiculo: {$in: marca},
+               })
+               .sort({ fecha_ingreso: -1})
+               .populate({
+                    path: "sucursal_lead",
+                    select: "name",
+               })
+               .populate({
+                    path: "dataOrigin",
+                    select: "name",
+               })
+               .populate({
+                    path: "tipoFinanciamiento",
+                    select: "tipo",
+               })
+               .populate({
+                    path: "entidad_bancaria",
+                    select: "name avatar",
+               })
+               .populate({
+                    path: "estado_conversion",
+                    select: "name",
+               })
+               .populate({
+                    path: "marcaVehiculoE",
+                    select: "name avatar",
+               })
+               .populate({
+                    path: "motivoDesplegable",
+                    select: "name",
+               })
+               .populate({
+                    path: "auto",
+                    select: "chasis model cod_tdp, version",
+                    populate: [
+                         {
+                              path: "chasis",
+                              select: "name",
+                         },
+                         {
+                              path: "model",
+                              select: "name marca avatar",
+                              populate: {
+                                   path: "marca",
+                                   select: "name avatar",
+                              },
+                         },
+                    ],
+               })
+               .populate({
+                    path: "asesorAsignado",
+                    select: "name tipo marca avatar",
+                    populate: {
+                         path: "marca",
+                         select: "name avatar",
+                    },
+               })
+               .populate({
+                    path: "createdBy",
+                    select: "name username",
+               });
+          }else{
+               query = await Lead.find({
+                    fecha_ingreso: {
+                         $gte: new Date(start),
+                         $lte: new Date(end),
+                    },
+                    marcaVehiculo: {$in: marca},
+               })
+               .sort({ fecha_ingreso: -1})
+               .populate({
+                    path: "sucursal_lead",
+                    select: "name",
+               })
+               .populate({
+                    path: "dataOrigin",
+                    select: "name",
+               })
+               .populate({
+                    path: "tipoFinanciamiento",
+                    select: "tipo",
+               })
+               .populate({
+                    path: "entidad_bancaria",
+                    select: "name avatar",
+               })
+               .populate({
+                    path: "estado_conversion",
+                    select: "name",
+               })
+               .populate({
+                    path: "marcaVehiculoE",
+                    select: "name avatar",
+               })
+               .populate({
+                    path: "motivoDesplegable",
+                    select: "name",
+               })
+               .populate({
+                    path: "auto",
+                    select: "chasis model cod_tdp, version",
+                    populate: [
+                         {
+                              path: "chasis",
+                              select: "name",
+                         },
+                         {
+                              path: "model",
+                              select: "name marca avatar",
+                              populate: {
+                                   path: "marca",
+                                   select: "name avatar",
+                              },
+                         },
+                    ],
+               })
+               .populate({
+                    path: "asesorAsignado",
+                    select: "name tipo marca avatar",
+                    populate: {
+                         path: "marca",
+                         select: "name avatar",
+                    },
+               })
+               .populate({
+                    path: "createdBy",
+                    select: "name username",
+               });
+          }
+
+          if(query.length > 0){
+               res.json({ total: query.length, all: query });
+          }else{
+               return res.status(404).json({message: `No hay leads con la marca ${marca}`})
+          }
+     } catch (err) {
+          console.log(err);
+          return res.status(503).json({ message: err.message });
+     }
+}
 
 export default leadCtrl;

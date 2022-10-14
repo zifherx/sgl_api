@@ -31,6 +31,8 @@ var _EstadoConversion = _interopRequireDefault(require("../models/EstadoConversi
 
 var _MotivoRechazo = _interopRequireDefault(require("../models/MotivoRechazo"));
 
+var _Marca = _interopRequireDefault(require("../models/Marca"));
+
 var leadCtrl = {};
 
 leadCtrl.getAll = /*#__PURE__*/function () {
@@ -234,16 +236,17 @@ leadCtrl.getOneById = /*#__PURE__*/function () {
 
 leadCtrl.createOne = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
-    var _req$body, codigo_interno, dataOrigin, customer_name, customer_document, customer_city, customer_cellphone, customer_cellphone2, customer_email, fecha_ingreso, createdBy, newObj, originFound, userFound, query;
+    var _req$body, codigo_interno, dataOrigin, marcaVehiculo, marcaVehiculoE, customer_name, customer_document, customer_city, customer_cellphone, customer_cellphone2, customer_email, fecha_ingreso, createdBy, newObj, originFound, marcaFound, userFound, query;
 
     return _regenerator["default"].wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            _req$body = req.body, codigo_interno = _req$body.codigo_interno, dataOrigin = _req$body.dataOrigin, customer_name = _req$body.customer_name, customer_document = _req$body.customer_document, customer_city = _req$body.customer_city, customer_cellphone = _req$body.customer_cellphone, customer_cellphone2 = _req$body.customer_cellphone2, customer_email = _req$body.customer_email, fecha_ingreso = _req$body.fecha_ingreso, createdBy = _req$body.createdBy;
+            _req$body = req.body, codigo_interno = _req$body.codigo_interno, dataOrigin = _req$body.dataOrigin, marcaVehiculo = _req$body.marcaVehiculo, marcaVehiculoE = _req$body.marcaVehiculoE, customer_name = _req$body.customer_name, customer_document = _req$body.customer_document, customer_city = _req$body.customer_city, customer_cellphone = _req$body.customer_cellphone, customer_cellphone2 = _req$body.customer_cellphone2, customer_email = _req$body.customer_email, fecha_ingreso = _req$body.fecha_ingreso, createdBy = _req$body.createdBy;
             _context3.prev = 1;
             newObj = new _Lead["default"]({
               codigo_interno: codigo_interno,
+              marcaVehiculo: marcaVehiculo,
               customer_name: customer_name,
               customer_document: customer_document,
               customer_city: customer_city,
@@ -272,15 +275,34 @@ leadCtrl.createOne = /*#__PURE__*/function () {
           case 8:
             newObj.dataOrigin = originFound._id;
             _context3.next = 11;
+            return _Marca["default"].findOne({
+              name: marcaVehiculoE
+            });
+
+          case 11:
+            marcaFound = _context3.sent;
+
+            if (marcaFound) {
+              _context3.next = 14;
+              break;
+            }
+
+            return _context3.abrupt("return", res.status(404).json({
+              message: "Marca ".concat(marcaVehiculoE, " no encontrada")
+            }));
+
+          case 14:
+            newObj.marcaVehiculoE = marcaFound._id;
+            _context3.next = 17;
             return _User["default"].findOne({
               username: createdBy
             });
 
-          case 11:
+          case 17:
             userFound = _context3.sent;
 
             if (userFound) {
-              _context3.next = 14;
+              _context3.next = 20;
               break;
             }
 
@@ -288,12 +310,12 @@ leadCtrl.createOne = /*#__PURE__*/function () {
               message: "Empleado ".concat(createdBy, " no encontrado")
             }));
 
-          case 14:
+          case 20:
             newObj.createdBy = userFound._id;
-            _context3.next = 17;
+            _context3.next = 23;
             return newObj.save();
 
-          case 17:
+          case 23:
             query = _context3.sent;
 
             if (query) {
@@ -302,23 +324,23 @@ leadCtrl.createOne = /*#__PURE__*/function () {
               });
             }
 
-            _context3.next = 25;
+            _context3.next = 31;
             break;
 
-          case 21:
-            _context3.prev = 21;
+          case 27:
+            _context3.prev = 27;
             _context3.t0 = _context3["catch"](1);
             console.log(_context3.t0);
             return _context3.abrupt("return", res.status(503).json({
               message: _context3.t0.message
             }));
 
-          case 25:
+          case 31:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[1, 21]]);
+    }, _callee3, null, [[1, 27]]);
   }));
 
   return function (_x5, _x6) {
@@ -1640,16 +1662,19 @@ leadCtrl.rankingLeadsConversionByDates = /*#__PURE__*/function () {
 
 leadCtrl.countLeadsByDates = /*#__PURE__*/function () {
   var _ref17 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee17(req, res) {
-    var _req$body14, estado, start, end, query;
+    var _req$body14, marca, estado, start, end, query;
 
     return _regenerator["default"].wrap(function _callee17$(_context17) {
       while (1) {
         switch (_context17.prev = _context17.next) {
           case 0:
-            _req$body14 = req.body, estado = _req$body14.estado, start = _req$body14.start, end = _req$body14.end;
+            _req$body14 = req.body, marca = _req$body14.marca, estado = _req$body14.estado, start = _req$body14.start, end = _req$body14.end;
             _context17.prev = 1;
             _context17.next = 4;
             return _Lead["default"].find({
+              marcaVehiculo: {
+                $regex: ".*" + marca + ".*"
+              },
               estado_lead: {
                 $regex: ".*" + estado + ".*"
               },
@@ -2032,6 +2057,188 @@ leadCtrl.leadsModificados = /*#__PURE__*/function () {
 
   return function (_x39, _x40) {
     return _ref20.apply(this, arguments);
+  };
+}(); //Nuevos Cambios
+
+
+leadCtrl.getLeadsByMarcaFecha = /*#__PURE__*/function () {
+  var _ref21 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee21(req, res) {
+    var _req$body18, marca, start, end, query;
+
+    return _regenerator["default"].wrap(function _callee21$(_context21) {
+      while (1) {
+        switch (_context21.prev = _context21.next) {
+          case 0:
+            _req$body18 = req.body, marca = _req$body18.marca, start = _req$body18.start, end = _req$body18.end;
+            query = null;
+            _context21.prev = 2;
+
+            if (!(start == null || start == undefined)) {
+              _context21.next = 9;
+              break;
+            }
+
+            _context21.next = 6;
+            return _Lead["default"].find({
+              marcaVehiculo: {
+                $in: marca
+              }
+            }).sort({
+              fecha_ingreso: -1
+            }).populate({
+              path: "sucursal_lead",
+              select: "name"
+            }).populate({
+              path: "dataOrigin",
+              select: "name"
+            }).populate({
+              path: "tipoFinanciamiento",
+              select: "tipo"
+            }).populate({
+              path: "entidad_bancaria",
+              select: "name avatar"
+            }).populate({
+              path: "estado_conversion",
+              select: "name"
+            }).populate({
+              path: "marcaVehiculoE",
+              select: "name avatar"
+            }).populate({
+              path: "motivoDesplegable",
+              select: "name"
+            }).populate({
+              path: "auto",
+              select: "chasis model cod_tdp, version",
+              populate: [{
+                path: "chasis",
+                select: "name"
+              }, {
+                path: "model",
+                select: "name marca avatar",
+                populate: {
+                  path: "marca",
+                  select: "name avatar"
+                }
+              }]
+            }).populate({
+              path: "asesorAsignado",
+              select: "name tipo marca avatar",
+              populate: {
+                path: "marca",
+                select: "name avatar"
+              }
+            }).populate({
+              path: "createdBy",
+              select: "name username"
+            });
+
+          case 6:
+            query = _context21.sent;
+            _context21.next = 12;
+            break;
+
+          case 9:
+            _context21.next = 11;
+            return _Lead["default"].find({
+              fecha_ingreso: {
+                $gte: new Date(start),
+                $lte: new Date(end)
+              },
+              marcaVehiculo: {
+                $in: marca
+              }
+            }).sort({
+              fecha_ingreso: -1
+            }).populate({
+              path: "sucursal_lead",
+              select: "name"
+            }).populate({
+              path: "dataOrigin",
+              select: "name"
+            }).populate({
+              path: "tipoFinanciamiento",
+              select: "tipo"
+            }).populate({
+              path: "entidad_bancaria",
+              select: "name avatar"
+            }).populate({
+              path: "estado_conversion",
+              select: "name"
+            }).populate({
+              path: "marcaVehiculoE",
+              select: "name avatar"
+            }).populate({
+              path: "motivoDesplegable",
+              select: "name"
+            }).populate({
+              path: "auto",
+              select: "chasis model cod_tdp, version",
+              populate: [{
+                path: "chasis",
+                select: "name"
+              }, {
+                path: "model",
+                select: "name marca avatar",
+                populate: {
+                  path: "marca",
+                  select: "name avatar"
+                }
+              }]
+            }).populate({
+              path: "asesorAsignado",
+              select: "name tipo marca avatar",
+              populate: {
+                path: "marca",
+                select: "name avatar"
+              }
+            }).populate({
+              path: "createdBy",
+              select: "name username"
+            });
+
+          case 11:
+            query = _context21.sent;
+
+          case 12:
+            if (!(query.length > 0)) {
+              _context21.next = 16;
+              break;
+            }
+
+            res.json({
+              total: query.length,
+              all: query
+            });
+            _context21.next = 17;
+            break;
+
+          case 16:
+            return _context21.abrupt("return", res.status(404).json({
+              message: "No hay leads con la marca ".concat(marca)
+            }));
+
+          case 17:
+            _context21.next = 23;
+            break;
+
+          case 19:
+            _context21.prev = 19;
+            _context21.t0 = _context21["catch"](2);
+            console.log(_context21.t0);
+            return _context21.abrupt("return", res.status(503).json({
+              message: _context21.t0.message
+            }));
+
+          case 23:
+          case "end":
+            return _context21.stop();
+        }
+      }
+    }, _callee21, null, [[2, 19]]);
+  }));
+
+  return function (_x41, _x42) {
+    return _ref21.apply(this, arguments);
   };
 }();
 

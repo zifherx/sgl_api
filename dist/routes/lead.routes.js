@@ -25,6 +25,8 @@ router.post('/', [_middlewares.authJwt.verifyToken, _middlewares.authJwt.isAsist
 
 router.post('/by-modificado', _lead["default"].leadsModificados);
 router.post('/by-status', _lead["default"].leadsByStatusFecha);
+router.post('/by-marca', _lead["default"].getLeadsByMarcaFecha); //Nueva Ruta
+
 router.post('/count/by-dates', _lead["default"].countLeadsByDates);
 router.post('/conversion/count-by-dates', _lead["default"].countLeadsConversionyDates);
 router.post('/ranking/by-dates', _lead["default"].rankingLeadsConversionByDates);

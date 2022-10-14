@@ -191,7 +191,7 @@ authCtrl.cambiarContrasena = /*#__PURE__*/function () {
             _context2.t0 = _context2["catch"](14);
             console.log(_context2.t0);
             return _context2.abrupt("return", res.status(503).json({
-              error: _context2.t0.message
+              message: _context2.t0.message
             }));
 
           case 28:
@@ -250,17 +250,18 @@ authCtrl.cerrarSesion = /*#__PURE__*/function () {
             }));
 
           case 12:
-            _context3.next = 17;
+            _context3.next = 18;
             break;
 
           case 14:
             _context3.prev = 14;
             _context3.t0 = _context3["catch"](1);
+            console.log(_context3.t0);
             return _context3.abrupt("return", res.status(503).json({
-              error: _context3.t0
+              message: _context3.t0.message
             }));
 
-          case 17:
+          case 18:
           case "end":
             return _context3.stop();
         }
@@ -337,7 +338,7 @@ authCtrl.forzarCierreSesion = /*#__PURE__*/function () {
             _context4.t0 = _context4["catch"](1);
             console.log(_context4.t0);
             return _context4.abrupt("return", res.status(503).json({
-              error: _context4.t0
+              message: _context4.t0.message
             }));
 
           case 21:

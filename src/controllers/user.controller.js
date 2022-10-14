@@ -1,6 +1,7 @@
 import Role from "../models/Role";
 import User from "../models/User";
 import Sucursal from '../models/Sucursal';
+import Marca from '../models/Marca';
 
 const userCtrl = {};
 
@@ -16,6 +17,10 @@ userCtrl.getAll = async (req, res) => {
 			.populate({
 				path: 'sucursal',
 				select: 'name'
+			})
+			.populate({
+				path: 'marca',
+				select: 'name avatar'
 			})
 			.populate({
 				path: "createdBy",
@@ -47,6 +52,10 @@ userCtrl.getOneById = async (req, res) => {
 				select: 'name'
 			})
 			.populate({
+				path: 'marca',
+				select: 'name avatar'
+			})
+			.populate({
 				path: "createdBy",
 				select: "name username",
 			});
@@ -63,11 +72,13 @@ userCtrl.getOneById = async (req, res) => {
 };
 
 userCtrl.createUser = async (req, res) => {
-	const { name, username, password, sucursal, roles, createdBy } = req.body;
+	const { name, username,email, cellphone, password, sucursal, marca, roles, createdBy } = req.body;
 	try {
 		const newUser = new User({
 			name,
 			username,
+			email, 
+			cellphone,
 			password: await User.encryptPassword(password),
 		});
 
@@ -75,7 +86,12 @@ userCtrl.createUser = async (req, res) => {
 		newUser.createdBy = userFound._id;
 
 		const sucursalFound = await Sucursal.findOne({name: sucursal});
+		if(!sucursalFound) return res.status(404).json({message: `Sucursal ${sucursal} no encontrada`})
 		newUser.sucursal = sucursalFound._id;
+		
+		const marcaFound = await Marca.find({name: marca});
+		if(!marcaFound) return res.status(404).json({message: `Marca ${marca} no encontrada`})
+		newUser.marca = marcaFound.map(a => a._id);
 
 		if (roles) {
 			const foundRole = await Role.find({ name: { $in: roles } });
@@ -98,13 +114,17 @@ userCtrl.createUser = async (req, res) => {
 
 userCtrl.updateUser = async (req, res) => {
 	const { userId } = req.params;
-	const { name,username, roles,email, cellphone, sucursal, status } = req.body;
+	const { name,username, roles,email, cellphone,marca, sucursal, status } = req.body;
+	// console.log(req.body);
 	try {
-		const roleFound = await Role.findOne({ name: roles });
+		const roleFound = await Role.find({ name: {$in: roles} });
 		const sucursalFound = await Sucursal.findOne({name: sucursal});
 		
         if(!sucursalFound) return res.status(404).json({message: `Sucursal ${sucursal} no encontrada`});
         if(!roleFound) return res.status(404).json({message: `No existe el rol ${roles}`});
+
+		const marcaFound = await Marca.find({name: marca});
+		if(!marcaFound) return res.status(404).json({message: `Marca ${marca} no encontrada`})
 
 		const query = await User.findByIdAndUpdate(userId, {
             name,
@@ -112,7 +132,8 @@ userCtrl.updateUser = async (req, res) => {
 			email,
 			cellphone,
 			sucursal: sucursalFound._id,
-			roles: roleFound._id,
+			marca: marcaFound.map(a => a._id),
+			roles: roleFound.map(a => a._id),
 			status,
 		});
 		if (query) {

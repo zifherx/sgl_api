@@ -24,6 +24,8 @@ const leadSchema = new Schema({
     customer_email: { type: String },
     // Estatus
     estado_lead: { type: String, default: 'INGRESADO' },
+    // estadoLeadE: { type: Schema.Types.ObjectId, ref: 'Estado', default: null},
+    // estadoConversion: { type: String},
     estado_conversion: { type: Schema.Types.ObjectId, ref: 'EstadoConversion', default: null },
     //Verificaciones de Leads
     isIngresado: { type: Boolean, default: true },
@@ -48,6 +50,8 @@ const leadSchema = new Schema({
     fecha_down: {type: Date},
     fecha_venta: {type: Date},
     //Vehiculo
+    marcaVehiculo: { type: String },
+    marcaVehiculoE: { type: Schema.Types.ObjectId, ref: 'Marca', default: null},
     auto: { type: Schema.Types.ObjectId, ref: 'Vehicle', default: null},
     //Asesor Asignado
     asesorAsignado: { ref: 'Seller', type: Schema.Types.ObjectId, default: null },

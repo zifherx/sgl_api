@@ -17,6 +17,8 @@ var _User = _interopRequireDefault(require("../models/User"));
 
 var _Sucursal = _interopRequireDefault(require("../models/Sucursal"));
 
+var _Marca = _interopRequireDefault(require("../models/Marca"));
+
 var userCtrl = {};
 
 userCtrl.getAll = /*#__PURE__*/function () {
@@ -36,6 +38,9 @@ userCtrl.getAll = /*#__PURE__*/function () {
             }).populate({
               path: 'sucursal',
               select: 'name'
+            }).populate({
+              path: 'marca',
+              select: 'name avatar'
             }).populate({
               path: "createdBy",
               select: "name username"
@@ -103,6 +108,9 @@ userCtrl.getOneById = /*#__PURE__*/function () {
               path: 'sucursal',
               select: 'name'
             }).populate({
+              path: 'marca',
+              select: 'name avatar'
+            }).populate({
               path: "createdBy",
               select: "name username"
             });
@@ -153,80 +161,116 @@ userCtrl.getOneById = /*#__PURE__*/function () {
 
 userCtrl.createUser = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
-    var _req$body, name, username, password, sucursal, roles, createdBy, newUser, userFound, sucursalFound, foundRole, rol, query;
+    var _req$body, name, username, email, cellphone, password, sucursal, marca, roles, createdBy, newUser, userFound, sucursalFound, marcaFound, foundRole, rol, query;
 
     return _regenerator["default"].wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            _req$body = req.body, name = _req$body.name, username = _req$body.username, password = _req$body.password, sucursal = _req$body.sucursal, roles = _req$body.roles, createdBy = _req$body.createdBy;
+            _req$body = req.body, name = _req$body.name, username = _req$body.username, email = _req$body.email, cellphone = _req$body.cellphone, password = _req$body.password, sucursal = _req$body.sucursal, marca = _req$body.marca, roles = _req$body.roles, createdBy = _req$body.createdBy;
             _context3.prev = 1;
             _context3.t0 = _User["default"];
             _context3.t1 = name;
             _context3.t2 = username;
-            _context3.next = 7;
+            _context3.t3 = email;
+            _context3.t4 = cellphone;
+            _context3.next = 9;
             return _User["default"].encryptPassword(password);
 
-          case 7:
-            _context3.t3 = _context3.sent;
-            _context3.t4 = {
+          case 9:
+            _context3.t5 = _context3.sent;
+            _context3.t6 = {
               name: _context3.t1,
               username: _context3.t2,
-              password: _context3.t3
+              email: _context3.t3,
+              cellphone: _context3.t4,
+              password: _context3.t5
             };
-            newUser = new _context3.t0(_context3.t4);
-            _context3.next = 12;
+            newUser = new _context3.t0(_context3.t6);
+            _context3.next = 14;
             return _User["default"].findOne({
               username: createdBy
             });
 
-          case 12:
+          case 14:
             userFound = _context3.sent;
             newUser.createdBy = userFound._id;
-            _context3.next = 16;
+            _context3.next = 18;
             return _Sucursal["default"].findOne({
               name: sucursal
             });
 
-          case 16:
+          case 18:
             sucursalFound = _context3.sent;
-            newUser.sucursal = sucursalFound._id;
 
-            if (!roles) {
-              _context3.next = 25;
+            if (sucursalFound) {
+              _context3.next = 21;
               break;
             }
 
-            _context3.next = 21;
+            return _context3.abrupt("return", res.status(404).json({
+              message: "Sucursal ".concat(sucursal, " no encontrada")
+            }));
+
+          case 21:
+            newUser.sucursal = sucursalFound._id;
+            _context3.next = 24;
+            return _Marca["default"].find({
+              name: marca
+            });
+
+          case 24:
+            marcaFound = _context3.sent;
+
+            if (marcaFound) {
+              _context3.next = 27;
+              break;
+            }
+
+            return _context3.abrupt("return", res.status(404).json({
+              message: "Marca ".concat(marca, " no encontrada")
+            }));
+
+          case 27:
+            newUser.marca = marcaFound.map(function (a) {
+              return a._id;
+            });
+
+            if (!roles) {
+              _context3.next = 35;
+              break;
+            }
+
+            _context3.next = 31;
             return _Role["default"].find({
               name: {
                 $in: roles
               }
             });
 
-          case 21:
+          case 31:
             foundRole = _context3.sent;
             newUser.roles = foundRole.map(function (b) {
               return b._id;
             });
-            _context3.next = 29;
+            _context3.next = 39;
             break;
 
-          case 25:
-            _context3.next = 27;
+          case 35:
+            _context3.next = 37;
             return _Role["default"].findOne({
               name: "Usuario"
             });
 
-          case 27:
+          case 37:
             rol = _context3.sent;
             newUser.roles = [rol._id];
 
-          case 29:
-            _context3.next = 31;
+          case 39:
+            _context3.next = 41;
             return newUser.save();
 
-          case 31:
+          case 41:
             query = _context3.sent;
 
             if (query) {
@@ -235,23 +279,23 @@ userCtrl.createUser = /*#__PURE__*/function () {
               });
             }
 
-            _context3.next = 39;
+            _context3.next = 49;
             break;
 
-          case 35:
-            _context3.prev = 35;
-            _context3.t5 = _context3["catch"](1);
-            console.log(_context3.t5);
+          case 45:
+            _context3.prev = 45;
+            _context3.t7 = _context3["catch"](1);
+            console.log(_context3.t7);
             return _context3.abrupt("return", res.status(503).json({
-              error: _context3.t5.message
+              error: _context3.t7.message
             }));
 
-          case 39:
+          case 49:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[1, 35]]);
+    }, _callee3, null, [[1, 45]]);
   }));
 
   return function (_x5, _x6) {
@@ -261,18 +305,21 @@ userCtrl.createUser = /*#__PURE__*/function () {
 
 userCtrl.updateUser = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(req, res) {
-    var userId, _req$body2, name, username, roles, email, cellphone, sucursal, status, roleFound, sucursalFound, query;
+    var userId, _req$body2, name, username, roles, email, cellphone, marca, sucursal, status, roleFound, sucursalFound, marcaFound, query;
 
     return _regenerator["default"].wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
             userId = req.params.userId;
-            _req$body2 = req.body, name = _req$body2.name, username = _req$body2.username, roles = _req$body2.roles, email = _req$body2.email, cellphone = _req$body2.cellphone, sucursal = _req$body2.sucursal, status = _req$body2.status;
+            _req$body2 = req.body, name = _req$body2.name, username = _req$body2.username, roles = _req$body2.roles, email = _req$body2.email, cellphone = _req$body2.cellphone, marca = _req$body2.marca, sucursal = _req$body2.sucursal, status = _req$body2.status; // console.log(req.body);
+
             _context4.prev = 2;
             _context4.next = 5;
-            return _Role["default"].findOne({
-              name: roles
+            return _Role["default"].find({
+              name: {
+                $in: roles
+              }
             });
 
           case 5:
@@ -306,53 +353,76 @@ userCtrl.updateUser = /*#__PURE__*/function () {
 
           case 13:
             _context4.next = 15;
+            return _Marca["default"].find({
+              name: marca
+            });
+
+          case 15:
+            marcaFound = _context4.sent;
+
+            if (marcaFound) {
+              _context4.next = 18;
+              break;
+            }
+
+            return _context4.abrupt("return", res.status(404).json({
+              message: "Marca ".concat(marca, " no encontrada")
+            }));
+
+          case 18:
+            _context4.next = 20;
             return _User["default"].findByIdAndUpdate(userId, {
               name: name,
               username: username,
               email: email,
               cellphone: cellphone,
               sucursal: sucursalFound._id,
-              roles: roleFound._id,
+              marca: marcaFound.map(function (a) {
+                return a._id;
+              }),
+              roles: roleFound.map(function (a) {
+                return a._id;
+              }),
               status: status
             });
 
-          case 15:
+          case 20:
             query = _context4.sent;
 
             if (!query) {
-              _context4.next = 20;
+              _context4.next = 25;
               break;
             }
 
             res.json({
               message: "Usuario actualizado con éxito"
             });
-            _context4.next = 21;
+            _context4.next = 26;
             break;
 
-          case 20:
+          case 25:
             return _context4.abrupt("return", res.status(404).json({
               message: "Usuario no encontrado"
             }));
 
-          case 21:
-            _context4.next = 27;
+          case 26:
+            _context4.next = 32;
             break;
 
-          case 23:
-            _context4.prev = 23;
+          case 28:
+            _context4.prev = 28;
             _context4.t0 = _context4["catch"](2);
             console.log(_context4.t0);
             return _context4.abrupt("return", res.status(503).json({
               message: _context4.t0.message
             }));
 
-          case 27:
+          case 32:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[2, 23]]);
+    }, _callee4, null, [[2, 28]]);
   }));
 
   return function (_x7, _x8) {

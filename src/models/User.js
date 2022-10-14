@@ -11,6 +11,7 @@ const userSchema = new Schema({
     avatar: { type: String },
     status: { type: Boolean, default: true },
     online: { type: Boolean, default: false },
+    marca: [{ type: Schema.Types.ObjectId, ref: 'Marca'}],
     sucursal: { type: Schema.Types.ObjectId, ref: 'Sucursal' },
     roles: [{ ref: 'Role', type: Schema.Types.ObjectId }],
     createdBy: { ref: 'User', type: Schema.Types.ObjectId }
