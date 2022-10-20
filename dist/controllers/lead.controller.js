@@ -1719,25 +1719,43 @@ leadCtrl.countLeadsByDates = /*#__PURE__*/function () {
 
 leadCtrl.countLeadsConversionyDates = /*#__PURE__*/function () {
   var _ref18 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee18(req, res) {
-    var _req$body15, isBooking, isVenta, start, end, query;
+    var _req$body15, marca, isBooking, isVenta, start, end, query, marcaFound;
 
     return _regenerator["default"].wrap(function _callee18$(_context18) {
       while (1) {
         switch (_context18.prev = _context18.next) {
           case 0:
-            _req$body15 = req.body, isBooking = _req$body15.isBooking, isVenta = _req$body15.isVenta, start = _req$body15.start, end = _req$body15.end;
+            _req$body15 = req.body, marca = _req$body15.marca, isBooking = _req$body15.isBooking, isVenta = _req$body15.isVenta, start = _req$body15.start, end = _req$body15.end;
             _context18.prev = 1;
             // const conversionState = await EstadoConversion.findOne({ name: estado });
             query = null;
+            _context18.next = 5;
+            return _Marca["default"].findOne({
+              name: marca
+            });
 
-            if (!isVenta) {
-              _context18.next = 9;
+          case 5:
+            marcaFound = _context18.sent;
+
+            if (marcaFound) {
+              _context18.next = 8;
               break;
             }
 
-            _context18.next = 6;
+            return _context18.abrupt("return", res.status(404).json({
+              message: "No se encontr\xF3 marca ".concat(marca)
+            }));
+
+          case 8:
+            if (!isVenta) {
+              _context18.next = 14;
+              break;
+            }
+
+            _context18.next = 11;
             return _Lead["default"].find({
               // estado_conversion: conversionState._id,
+              marcaVehiculoE: marcaFound._id,
               isBooking: isBooking,
               isVenta: isVenta,
               fecha_conversion: {
@@ -1746,15 +1764,16 @@ leadCtrl.countLeadsConversionyDates = /*#__PURE__*/function () {
               }
             }).countDocuments();
 
-          case 6:
+          case 11:
             query = _context18.sent;
-            _context18.next = 12;
+            _context18.next = 17;
             break;
 
-          case 9:
-            _context18.next = 11;
+          case 14:
+            _context18.next = 16;
             return _Lead["default"].find({
               // estado_conversion: conversionState._id,
+              marcaVehiculoE: marcaFound._id,
               isBooking: isBooking,
               fecha_conversion: {
                 $gte: new Date(start),
@@ -1762,33 +1781,33 @@ leadCtrl.countLeadsConversionyDates = /*#__PURE__*/function () {
               }
             }).countDocuments();
 
-          case 11:
+          case 16:
             query = _context18.sent;
 
-          case 12:
+          case 17:
             if (query >= 0) {
               res.json({
                 qty: query
               });
             }
 
-            _context18.next = 19;
+            _context18.next = 24;
             break;
 
-          case 15:
-            _context18.prev = 15;
+          case 20:
+            _context18.prev = 20;
             _context18.t0 = _context18["catch"](1);
             console.log(_context18.t0);
             return _context18.abrupt("return", res.status(503).json({
               message: _context18.t0.message
             }));
 
-          case 19:
+          case 24:
           case "end":
             return _context18.stop();
         }
       }
-    }, _callee18, null, [[1, 15]]);
+    }, _callee18, null, [[1, 20]]);
   }));
 
   return function (_x35, _x36) {
@@ -1976,6 +1995,9 @@ leadCtrl.leadsModificados = /*#__PURE__*/function () {
               select: "name"
             }).populate({
               path: "dataOrigin",
+              select: "name"
+            }).populate({
+              path: "marcaVehiculoE",
               select: "name"
             }).populate({
               path: "tipoFinanciamiento",

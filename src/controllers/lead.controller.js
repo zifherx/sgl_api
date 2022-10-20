@@ -737,15 +737,19 @@ leadCtrl.countLeadsByDates = async (req, res) => {
 };
 
 leadCtrl.countLeadsConversionyDates = async (req, res) => {
-     const { isBooking, isVenta, start, end } = req.body;
+     const { marca, isBooking, isVenta, start, end } = req.body;
 
      try {
           // const conversionState = await EstadoConversion.findOne({ name: estado });
           let query = null;
 
+          const marcaFound = await Marca.findOne({name: marca});
+          if(!marcaFound) return res.status(404).json({message: `No se encontró marca ${marca}`});
+
           if (isVenta) {
                query = await Lead.find({
                     // estado_conversion: conversionState._id,
+                    marcaVehiculoE: marcaFound._id,
                     isBooking,
                     isVenta,
                     fecha_conversion: { $gte: new Date(start), $lte: new Date(end) },
@@ -753,6 +757,7 @@ leadCtrl.countLeadsConversionyDates = async (req, res) => {
           } else {
                query = await Lead.find({
                     // estado_conversion: conversionState._id,
+                    marcaVehiculoE: marcaFound._id,
                     isBooking,
                     fecha_conversion: { $gte: new Date(start), $lte: new Date(end) },
                }).countDocuments();
@@ -849,6 +854,10 @@ leadCtrl.leadsModificados = async (req, res) => {
                })
                .populate({
                     path: "dataOrigin",
+                    select: "name",
+               })
+               .populate({
+                    path: "marcaVehiculoE",
                     select: "name",
                })
                .populate({

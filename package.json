@@ -1,6 +1,6 @@
 {
     "name": "sgl_api_js",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "description": "Backend SGL",
     "main": "index.js",
     "scripts": {
