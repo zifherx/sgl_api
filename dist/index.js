@@ -24,7 +24,7 @@ function _main() {
             return _app["default"].listen(_app["default"].get('port'));
 
           case 2:
-            console.log('Server on port', _app["default"].get('port'));
+            console.log('Server is running on port:', _app["default"].get('port'));
             _context.next = 5;
             return (0, _database["default"])();
 

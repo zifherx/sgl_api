@@ -1,14 +1,14 @@
-import express from 'express';
-import morgan from 'morgan';
-import cors from 'cors';
-import helmet from 'helmet';
-import path from 'path';
-import indexRoutes from './routes';
-import 'dotenv/config';
-import * as initData from './libs/initialSetup';
+import express from "express";
+import morgan from "morgan";
+import cors from "cors";
+import helmet from "helmet";
+import path from "path";
+import indexRoutes from "./routes";
+import "dotenv/config";
+import * as initData from "./libs/initialSetup";
 
 //Creando Servidor
-const app = express()
+const app = express();
 
 //Carga de roles
 initData.createRoles();
@@ -16,19 +16,25 @@ initData.createRoles();
 initData.createAdminUser();
 
 //Settings
-app.set('port', Number(process.env.PORT) || 4000)
+app.set("port", Number(process.env.PORT) || 5000);
+
+let puertoFront = 8081;
 
 //Middlewares
-app.use(helmet())
-app.use(morgan('dev'))
-app.use(cors())
-app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
+app.use(cors({
+    origin: ['https://autonortnor.com', `http://localhost:${puertoFront}`],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+}));
+// app.use(helmet())
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 //Routes
-app.use('/api', indexRoutes)
+app.use("/api", indexRoutes);
 
 //Static
-app.use('/public/uploads', express.static(path.resolve('uploads')))
+app.use("/public/uploads", express.static(path.resolve("uploads")));
 
 export default app;

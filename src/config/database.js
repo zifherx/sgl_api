@@ -3,6 +3,7 @@ import index from './index'
 
 const initializeDB = async () => {
     try {
+        // console.log('URI:' ,index.mongoURL);
         let con = await connect(index.mongoURL,{
             useNewUrlParser: true,
             useUnifiedTopology: true,

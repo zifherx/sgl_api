@@ -36,19 +36,24 @@ initData.createRoles(); //Carga de Admin User
 
 initData.createAdminUser(); //Settings
 
-app.set('port', Number(process.env.PORT) || 4000); //Middlewares
+app.set("port", Number(process.env.PORT) || 5000);
+var puertoFront = 8081; //Middlewares
 
-app.use((0, _helmet["default"])());
-app.use((0, _morgan["default"])('dev'));
-app.use((0, _cors["default"])());
+app.use((0, _cors["default"])({
+  origin: ['https://autonortnor.com', "http://localhost:".concat(puertoFront)],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+})); // app.use(helmet())
+
+app.use((0, _morgan["default"])("dev"));
 app.use(_express["default"].json());
 app.use(_express["default"].urlencoded({
   extended: false
 })); //Routes
 
-app.use('/api', _routes["default"]); //Static
+app.use("/api", _routes["default"]); //Static
 
-app.use('/public/uploads', _express["default"]["static"](_path["default"].resolve('uploads')));
+app.use("/public/uploads", _express["default"]["static"](_path["default"].resolve("uploads")));
 var _default = app;
 exports["default"] = _default;
 //# sourceMappingURL=app.js.map
